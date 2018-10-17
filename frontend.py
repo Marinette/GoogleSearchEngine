@@ -1,4 +1,15 @@
 from bottle import *
+from oauth2client.client import flow_from_clientsecrets
+from oauth2client.client import OAuth2WebServerFlow
+from googleapiclient.errors import HttpError
+from googleapiclient.discovery import build
+
+@route('/', 'GET')
+def home():
+    flow = flow_from_clientsecrets("client_secret_346297252987-gessg0ftmins8qrsdkkh8lgv9ask1occ.apps.googleusercontent.com.json", scope='https://www.googleapis.com/auth/plus.me https://www.googleapis.com/auth/userinfo.email', redirect_uri = "http://localhost:8080/redirect")
+    uri = flow.step1_get_authorize_url()
+    bottle.redirect(str(uri))
+
 
 # global variables for keyword history
 history_counter = """ """

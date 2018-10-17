@@ -1,11 +1,38 @@
 from bottle import *
+from oauth2client.client import flow_from_clientsecrets
+from oauth2client.client import OAuth2WebServerFlow
+from googleapiclient.errors import HttpError
+from googleapiclient.discovery import build
+import httplib2
+
+@route('/', 'GET')
+def home():
+    flow = flow_from_clientsecrets("client_secret_346297252987-gessg0ftmins8qrsdkkh8lgv9ask1occ.apps.googleusercontent.com.json", scope='https://www.googleapis.com/auth/plus.me https://www.googleapis.com/auth/userinfo.email', redirect_uri = "http://localhost:8080/redirect")
+    uri = flow.step1_get_authorize_url()
+    redirect(str(uri))
+
+@route('/redirect')
+def redirect_page():
+    code = request.query.get('code','')
+    flow = OAuth2WebServerFlow(client_id="346297252987-gessg0ftmins8qrsdkkh8lgv9ask1occ.apps.googleusercontent.com", client_secret = "oJVewakqwN7qzgX7J4Xh889P", scope='https://www.googleapis.com/auth/plus.me https://www.googleapis.com/auth/userinfo.email', redirect_uri = "http://localhost:8080/redirect")
+    credentials = flow.step2_exchange(code)
+    token = credentials.id_token['sub']
+
+    http = httplib2.Http()
+    http = credentials.authorize(http)
+
+    #get user email
+    users_service = build('oauth2','v2', http=http)
+    user_document = users_service.userinfo().get().execute()
+    user_email = user_document['email']
+
+
 
 # global variables for keyword history
 history_counter = """ """
 top = """ """
 history = dict()
 
-@route('/')
 def homepage():
     output = template('homepage.tpl', history = top, table = history_counter)
     return output

@@ -1,3 +1,4 @@
+import bottle
 from bottle import *
 from oauth2client.client import flow_from_clientsecrets
 from oauth2client.client import OAuth2WebServerFlow
@@ -25,7 +26,8 @@ def redirect_page():
     users_service = build('oauth2','v2', http=http)
     user_document = users_service.userinfo().get().execute()
     user_email = user_document['email']
-
+    # after successfully entering information, redirect to the home page
+    redirect('/homepage')
 
 
 # global variables for keyword history
@@ -33,6 +35,7 @@ history_counter = """ """
 top = """ """
 history = dict()
 
+@route('/homepage')
 def homepage():
     output = template('homepage.tpl', history = top, table = history_counter)
     return output

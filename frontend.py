@@ -5,36 +5,40 @@ from googleapiclient.errors import HttpError
 from googleapiclient.discovery import build
 import httplib2
 
-@route('/', 'GET')
-def home():
-    flow = flow_from_clientsecrets("client_secret_346297252987-gessg0ftmins8qrsdkkh8lgv9ask1occ.apps.googleusercontent.com.json", scope='https://www.googleapis.com/auth/plus.me https://www.googleapis.com/auth/userinfo.email', redirect_uri = "http://localhost:8080/redirect")
-    uri = flow.step1_get_authorize_url()
-    redirect(str(uri))
+#-------------------- Beaker Stuff ---------------------------------------------
+import bottle
+from beaker.middleware import SessionMiddleware
 
-@route('/redirect')
-def redirect_page():
-    code = request.query.get('code','')
-    flow = OAuth2WebServerFlow(client_id="346297252987-gessg0ftmins8qrsdkkh8lgv9ask1occ.apps.googleusercontent.com", client_secret = "oJVewakqwN7qzgX7J4Xh889P", scope='https://www.googleapis.com/auth/plus.me https://www.googleapis.com/auth/userinfo.email', redirect_uri = "http://localhost:8080/redirect")
-    credentials = flow.step2_exchange(code)
-    token = credentials.id_token['sub']
+session_opts = {
+    'session.type': 'file',
+    'session.data_dir': './session/',
+    'session.auto': True
+}
+#request handler
+sessionApp = SessionMiddleware(bottle.app(), session_opts)
+#-------------------Beaker End--------------------------------------------------
 
-    http = httplib2.Http()
-    http = credentials.authorize(http)
-
-    #get user email
-    users_service = build('oauth2','v2', http=http)
-    user_document = users_service.userinfo().get().execute()
-    user_email = user_document['email']
-
-
-
-# global variables for keyword history
+##-------------GLOBAL VARIABLES FOR HOMEPAGE----------------------------------##
 history_counter = """ """
-top = """ """
 history = dict()
+## ---------------------------------------------------------------------------##
 
+#------------------- R O U T E S ----------------------------------------------#
+#------------------------------------------------------------------------------#
+@route('/', 'GET')
 def homepage():
-    output = template('homepage.tpl', history = top, table = history_counter)
+    output = 0
+    session = request.environ.get('beaker.session')
+    print session
+
+    try: # Check logged in info
+        email = session['email']
+        profilePicture = session['picture']
+        userName = session['name']
+        output = template('homepage.tpl', history = "<h1>Top 20 Words</h1>", table = history_counter)
+    except: # runs if no login info
+        output = template('homepageanon.tpl')
+
     return output
 
 @route('/static/<filename>')
@@ -61,9 +65,7 @@ def display_word_count():
     word_counter = """<table name = /"results/"> <tr> <th>Word</th> <th>Count</th> </tr>"""
     # updating word history html table
     global history_counter
-    global top
     history_counter = """<table name = /"history/"> <tr> <th>Word</th> <th>Count</th> </tr>"""
-    top = """ <h4> Top 20 Keywords </h4> """
     # updating word count table
     key_list = d.keys()
     count = 0
@@ -80,11 +82,64 @@ def display_word_count():
         history_counter += ("<tr><td>" + key + "</td><td>" + str(history[key]) + "</td></tr>")
         count += 1
 
-    table_output = template('table.tpl', keyword = query, table = word_counter)
+    return template('table.tpl', keyword = query, table = word_counter)
 
-    return table_output
+@route('/login')
+def logIn():
+    flow = flow_from_clientsecrets("client_secret_346297252987-gessg0ftmins8qrsdkkh8lgv9ask1occ.apps.googleusercontent.com.json", scope='https://www.googleapis.com/auth/plus.me https://www.googleapis.com/auth/userinfo.email', redirect_uri = "http://localhost:8080/redirect")
+    uri = flow.step1_get_authorize_url()
+    redirect(str(uri))
+
+@route('/redirect')
+def redirect_page():
+    code = request.query.get('code','')
+    flow = OAuth2WebServerFlow(client_id="346297252987-gessg0ftmins8qrsdkkh8lgv9ask1occ.apps.googleusercontent.com", client_secret = "oJVewakqwN7qzgX7J4Xh889P", scope='https://www.googleapis.com/auth/plus.me https://www.googleapis.com/auth/userinfo.email', redirect_uri = "http://localhost:8080/redirect")
+    credentials = flow.step2_exchange(code)
+    token = credentials.id_token['sub']
+
+    http = httplib2.Http()
+    http = credentials.authorize(http)
+
+    #get user email
+    users_service = build('oauth2','v2', http=http)
+    user_document = users_service.userinfo().get().execute()
+    user_email = user_document['email']
+
+    saveSession(user_document)
+    # after successfully entering information, redirect to the home page
+    redirect('/')
+
+@route('/logout')
+def logout():
+    session = request.environ.get('beaker.session')
+    session.delete()
+    redirect('/')
+
+#------------------------------------------------------------------------------#
+#------------------------------------------------------------------------------#
+## ------Functions-------------------------------------------------------------
+#Function saves the session information
+def saveSession(user_document):
+        #save session
+        #print user_document # checks the keys for user doc
+        session = request.environ.get('beaker.session')
+        try:
+            session['name'] = user_document['given_name']
+        except:
+            session['name'] = "N/A"
+        try:
+            session['email'] = user_email
+        except:
+            session['email'] = "N/A"
+        try:
+            session['picture'] = user_document['picture']
+        except:
+            session['picture'] = "N/A"
+
+        session.save()
+        print "/redirect: session ", session
 
 
-run(host='localhost', port=8080, debug=True)
-#run(host='0.0.0.0', port=8080)
-#http://your_ip:8080/
+
+#run the app
+bottle.run(app=sessionApp)

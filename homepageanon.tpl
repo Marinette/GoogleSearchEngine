@@ -7,8 +7,8 @@
 
 	<body>
 
-	<form action ="/logout" method="PUT">
-		<p><input value = "Sign Out" type="submit" class = "button"/></p>
+	<form action ="/login" method="GET">
+		<p><input value = "Sign In" type="submit" class = "button"/></p>
 	</form>
 
 		<div id = "page">
@@ -21,12 +21,6 @@
 			</form>
 		</div>
 		<br>
-		<p>
-			{{!history}}
-		</p>
-		<p>
-			{{!table}}
-		</p>
 
 	</body>
 

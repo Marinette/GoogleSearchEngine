@@ -5,7 +5,7 @@ from googleapiclient.errors import HttpError
 from googleapiclient.discovery import build
 import httplib2
 
-# Beaker Stuff ---------------------------------------------
+#-------------------- Beaker Stuff ---------------------------------------------
 import bottle
 from beaker.middleware import SessionMiddleware
 
@@ -16,13 +16,15 @@ session_opts = {
 }
 #request handler
 sessionApp = SessionMiddleware(bottle.app(), session_opts)
-# Beaker End--------------------------------------------------
+#-------------------Beaker End--------------------------------------------------
 
-##---GLOBAL VARIABLES FOR HOMEPAGE---##
+##-------------GLOBAL VARIABLES FOR HOMEPAGE----------------------------------##
 history_counter = """ """
 history = dict()
-## ----------------------------------##
+## ---------------------------------------------------------------------------##
 
+#------------------- R O U T E S ----------------------------------------------#
+#------------------------------------------------------------------------------#
 @route('/', 'GET')
 def homepage():
     output = 0
@@ -103,21 +105,41 @@ def redirect_page():
     user_document = users_service.userinfo().get().execute()
     user_email = user_document['email']
 
-    #save session
-    #print user_document # checks the keys for user doc
-    session = request.environ.get('beaker.session')
-    session['name'] = user_document['given_name']
-    session['email'] = user_email
-    session['picture'] = user_document['picture']
-
-    session.save()
-    print "/redirect: session ", session
+    saveSession(user_document)
     # after successfully entering information, redirect to the home page
     redirect('/')
 
 @route('/logout')
 def logout():
-    return """<h1> Log Out Page </h1>"""
+    session = request.environ.get('beaker.session')
+    session.delete()
+    redirect('/')
+
+#------------------------------------------------------------------------------#
+#------------------------------------------------------------------------------#
+## ------Functions-------------------------------------------------------------
+#Function saves the session information
+def saveSession(user_document):
+        #save session
+        #print user_document # checks the keys for user doc
+        session = request.environ.get('beaker.session')
+        try:
+            session['name'] = user_document['given_name']
+        except:
+            session['name'] = "N/A"
+        try:
+            session['email'] = user_email
+        except:
+            session['email'] = "N/A"
+        try:
+            session['picture'] = user_document['picture']
+        except:
+            session['picture'] = "N/A"
+
+        session.save()
+        print "/redirect: session ", session
+
+
 
 #run the app
 bottle.run(app=sessionApp)

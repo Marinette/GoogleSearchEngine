@@ -35,7 +35,7 @@ def homepage():
         email = session['email']
         profilePicture = session['picture']
         userName = session['name']
-        output = template('homepage.tpl', history = "<h1>Top 20 Words</h1>", table = history_counter, profilePicture = profilePicture , Name = userName)
+        output = template('homepage.tpl', history = "Top 20 Words", table = history_counter, profilePicture = profilePicture , Name = userName, Email = email)
     except: # runs if no login info
         output = template('homepageanon.tpl')
 
@@ -62,10 +62,10 @@ def display_word_count():
     # list of words storted in descending order based on values
     new_history = sorted(history, key=history.get, reverse=True)
     # word count html table
-    word_counter = """<table name = /"results/"> <tr> <th>Word</th> <th>Count</th> </tr>"""
+    word_counter = """<table class="table table-bordered one-edge-shadow" name = /"results/"> <tr> <th>Word</th> <th>Count</th> </tr>"""
     # updating word history html table
     global history_counter
-    history_counter = """<table name = /"history/"> <tr> <th>Word</th> <th>Count</th> </tr>"""
+    history_counter = """<table class="table table-bordered one-edge-shadow" name = /"history/"> <tr> <th>Word</th> <th>Count</th> </tr>"""
     # updating word count table
     key_list = d.keys()
     count = 0
@@ -127,20 +127,23 @@ def logout():
 #Function saves the session information
 def saveSession(user_document):
         #save session
-        #print user_document # checks the keys for user doc
+        print user_document # checks the keys for user doc
         session = request.environ.get('beaker.session')
         try:
-            session['name'] = user_document['given_name']
+            if user_document['name'] is '':
+                session['name'] = 'Acrobatic Armadillo'
+            else:
+                session['name'] = user_document['name']
         except:
-            session['name'] = "N/A"
+            session['name'] = ""
         try:
             session['email'] = user_email
         except:
-            session['email'] = "N/A"
+            session['email'] = ""
         try:
             session['picture'] = user_document['picture']
         except:
-            session['picture'] = "N/A"
+            session['picture'] = "https://images.pexels.com/photos/356378/pexels-photo-356378.jpeg?auto=compress&cs=tinysrgb&h=350"
 
         session.save()
         print "/redirect: session ", session

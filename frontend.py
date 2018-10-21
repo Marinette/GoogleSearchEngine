@@ -35,7 +35,7 @@ def homepage():
         email = session['email']
         profilePicture = session['picture']
         userName = session['name']
-        output = template('homepage.tpl', history = "<h1>Top 20 Words</h1>", table = history_counter)
+        output = template('homepage.tpl', history = "<h1>Top 20 Words</h1>", table = history_counter, profilePicture = profilePicture , Name = userName)
     except: # runs if no login info
         output = template('homepageanon.tpl')
 
@@ -82,7 +82,13 @@ def display_word_count():
         history_counter += ("<tr><td>" + key + "</td><td>" + str(history[key]) + "</td></tr>")
         count += 1
 
-    return template('table.tpl', keyword = query, table = word_counter)
+    try: # Check logged in info
+        session = request.environ.get('beaker.session')
+        profilePicture = session['picture']
+        userName = session['name']
+        return template('table.tpl', keyword = query, table = word_counter, profilePicture = profilePicture, Name = userName)
+    except: # runs if no login info
+        return template('tableAnon.tpl', keyword = query, table = word_counter)
 
 @route('/login')
 def logIn():

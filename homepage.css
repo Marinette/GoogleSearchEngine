@@ -1,9 +1,12 @@
 body {
-  background-color: #65410D;
+  background-color: #e5e5e5;
   text-align: center;
   width: 1000px;
 }
 
+h1 {
+  color: white;
+}
 h4 {
   color: white;
   font-size: 20px;
@@ -24,7 +27,7 @@ form {
 }
 
 .button {
-  background-color: rgba(121,80,20, 0.6);
+  background-color: rgba(0, 0, 0);
   border: solid #795014;
   color: white;
   padding: 10px 24px;
@@ -36,7 +39,7 @@ form {
 }
 
 textarea {
-  border: 1px solid #777777;
+  border: 1px solid ##e5e5e5;
   padding: 10px;
   height: 300px;
   width: 500px;
@@ -49,19 +52,29 @@ img {
 }
 
 table {
-    border-collapse: collapse;
-    width: 50%;
-    color: white;
-    margin-left: auto;
-    margin-right: auto;
+  border-collapse: collapse;
+  width: 50%;
+  color: white;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 th, td {
-    padding: 8px;
-    text-align: left;
-    border-bottom: 1px solid rgb(210, 166, 121);
+  padding: 8px;
+  text-align: left;
+  border-bottom: 1px solid rgb(210, 166, 121);
 }
 
 tr:hover {
   background-color: rgb(210, 166, 121);
+}
+
+.profilePic img{
+  border-radius: 40%;
+}
+
+
+.userName h1 {
+  font-family: cursive;
+  color: red;
 }

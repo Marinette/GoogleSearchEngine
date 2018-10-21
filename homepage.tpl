@@ -1,33 +1,42 @@
 <!DOCTYPE html>
 <html>
-	<head>
-    <title> Roast </title>
-		<link rel="stylesheet" href="/static/homepage.css">
-	</head>
 
-	<body>
+<head>
+	<title> Roast </title>
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+	<link rel="stylesheet" href="/static/style.css">
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+</head>
 
-	<form action ="/logout" method="PUT">
-		<p><input value = "Sign Out" type="submit" class = "button"/></p>
-	</form>
+<nav class="navbar navbar-light bg-light">
+	<a class="navbar-brand" href="#">
+		<div class = "profilePic">
+    <img src= {{!profilePicture}} alt=""> </div>
+  </a>
 
-		<div id = "page">
-			<div id = "name">
-				<img src="/static/logo.png" alt="Logo" >
+	<span class="navbar-brand mb-0 h1"> {{!Name}} </span>
+</nav>
+
+<body>
+	<div class="container ">
+
+		<div class="row h-100 justify-content-center align-items-center no-gutters">
+			<div class="engineLogo">
+				<img src="/static/logo.png" alt="Logo">
 			</div>
-			<form action ="/search" method="post">
-				<p><input class = "search" name="keywords" placeholder = "ask me anything..." type="text"/></p>
-				<p><input value = "Search" type="submit" class = "button"/></p>
-			</form>
 		</div>
-		<br>
-		<p>
-			{{!history}}
-		</p>
-		<p>
-			{{!table}}
-		</p>
 
-	</body>
+		<div class="row h-100 justify-content-center align-items-center">
+			<class="col-6 justify-content-center">
+				<form action="/search" method="post">
+					<input class="form-control" name="keywords" placeholder="Search.." type="text" />
+				</form>
+		</div>
+		<div class="row h-100 justify-content-center align-items-center">
+			<h2>{{!history}}</h2>
+			{{!table}}
+		</div>
+	</div>
+</body>
 
 </html>

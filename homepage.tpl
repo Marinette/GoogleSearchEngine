@@ -42,7 +42,11 @@
 		<div class="row h-100 justify-content-center align-items-center">
 			<div class="history_table ">
 				<h2>{{!history}}</h2>
+<<<<<<< HEAD
+				{{!table}}
+=======
 					{{!table}}
+>>>>>>> 9a40960e2cff2e9a450a16c7ec0dbc4516c223c9
 			</div>
 		</div>
 	</div>

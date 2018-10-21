@@ -38,11 +38,17 @@
 				<form action="/search" method="post">
 					<input class="form-control" name="keywords" placeholder="Search.." type="text" />
 				</form>
+<<<<<<< HEAD
 				<div class="query-words">
 					<form action="/">
 						<input value="Back to Homepage" type="submit" class="btn btn-light" />
 					</form>
 				</div>
+=======
+				<form action="/">
+					<input value="Back to Homepage" type="submit" class="btn btn-light" />
+				</form>
+>>>>>>> 9a40960e2cff2e9a450a16c7ec0dbc4516c223c9
 		</div>
 		<div class="row h-100 justify-content-center align-items-center">
 			<div class="history_table ">

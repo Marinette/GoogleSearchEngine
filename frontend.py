@@ -82,14 +82,17 @@ def display_word_count():
         history_counter += ("<tr><td>" + key + "</td><td>" + str(history[key]) + "</td></tr>")
         count += 1
 
-    try: # Check logged in info
-        session = request.environ.get('beaker.session')
+    session = request.environ.get('beaker.session')
+    output = 0;
+    # Check logged in info
+    try:
         profilePicture = session['picture']
         userName = session['name']
-        return template('table.tpl', keyword = query, table = word_counter, profilePicture = profilePicture, Name = userName)
+        email = session['email']
+        output = template('table.tpl', keyword = query, table = word_counter, profilePicture = profilePicture, Name = userName, Email = email)
     except: # runs if no login info
-        return template('tableAnon.tpl', keyword = query, table = word_counter)
-
+        output = template('tableAnon.tpl', keyword = query, table = word_counter)
+    return output
 @route('/login')
 def logIn():
     flow = flow_from_clientsecrets("client_secret_346297252987-gessg0ftmins8qrsdkkh8lgv9ask1occ.apps.googleusercontent.com.json", scope='https://www.googleapis.com/auth/plus.me https://www.googleapis.com/auth/userinfo.email', redirect_uri = "http://localhost:8080/redirect")

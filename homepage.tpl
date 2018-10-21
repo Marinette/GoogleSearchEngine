@@ -17,7 +17,7 @@
 			<span class="caret"></span>
 		</button>
 		<ul class="dropdown-menu dropdown-menu-right">
-			<li><a href="#"> Hi {{!Name}}, </a></li>
+			<li><a href="#"> Hi {{!Name}} </a></li>
 			<li><a href="#">{{!Email}}</a></li>
 			<li><a href="/logout"> Log Out</a></li>
 		</ul>

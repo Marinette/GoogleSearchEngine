@@ -154,4 +154,4 @@ def saveSession(user_document):
 
 
 #run the app
-bottle.run(host='0.0.0.0')
+bottle.run(app=sessionApp)

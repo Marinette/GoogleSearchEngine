@@ -38,8 +38,8 @@ def aws_setup():
     """ This function connects to us-east-1, sets up an instance,
         copys files to the instance, and starts the server. """
 
-    aws_access_key_id = 'AKIAI7H2FYLIBEYNPTWQ'
-    aws_secret_access_key = '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'
+    aws_access_key_id = xxxxxxxxxxx
+    aws_secret_access_key = xxxxxxxx
     #ami = 'ami-8caa1ce4'
     ami = 'ami-9aaa1cf2'
 

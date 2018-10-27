@@ -25,8 +25,9 @@ def get_security_group(conn):
                         'security group for csc326')
         security_group.authorize('icmp', -1, -1, '0.0.0.0/0')
         security_group.authorize('tcp', 22, 22, '0.0.0.0/0')
-        #security_group.authorize('tcp', 80, 80, '0.0.0.0/0')
-        security_group.authorize('tcp', 8080, 8080, '0.0.0.0/0')
+        security_group.authorize('tcp', 80, 80, '0.0.0.0/0')
+        #security_group.authorize('tcp', 8080, 8080, '0.0.0.0/0')
+        
     # if there is an error, get existing security group
     except boto.exception.EC2ResponseError:
         security_group = 'csc326-group24'
@@ -38,9 +39,8 @@ def aws_setup():
     """ This function connects to us-east-1, sets up an instance,
         copys files to the instance, and starts the server. """
 
-    aws_access_key_id = xxxxxxxxxxx
-    aws_secret_access_key = xxxxxxxx
-    #ami = 'ami-8caa1ce4'
+    aws_access_key_id = 'xxxxxxxx'
+    aws_secret_access_key = 'xxxxxxxx'
     ami = 'ami-9aaa1cf2'
 
     # setup connection
@@ -62,18 +62,11 @@ def aws_setup():
         time.sleep(1)
 
     # get ip address
-    # read lab doc
-    # make functions
     address = conn.allocate_address()
     address.associate(inst.id)
     ip = address.public_ip
-    print ('The ip address is ', ip)
-
-    # get dns of the instance (instance_id)
-    dns = conn.get_all_instances(instance_ids =
-        [resp.instances[0].id])[0].instances[0].public_dns_name
-    print ('The dns is ', dns)
+    print ('The public ip address is ', ip)
 
 
-if __name__ == '__main__':
-    aws_setup()
+
+aws_setup()

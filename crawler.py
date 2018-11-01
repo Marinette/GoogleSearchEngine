@@ -28,6 +28,7 @@ import redis
 from pagerank import page_rank
 import re
 
+# --------------------------------------------------------------------------
 def attr(elem, attr):
     """An html attribute from an html element. E.g. <a href="">, then
     attr(elem, "href") will get the href or an empty string."""
@@ -54,6 +55,7 @@ class crawler(object):
         self.inverted_index = { }
         self.resolved_inverted_index = { }
         self.links = [ ] # list of tuples in the form (idfrom,idto)
+        self.dbconnection = db_conn # instancing the connecting in the class
 
         # functions to call when entering and exiting specific tags
         self._enter = defaultdict(lambda *a, **ka: self._visit_ignore)
@@ -254,6 +256,7 @@ class crawler(object):
             else:
                 self.inverted_index[self.word_id(word)] = {self._curr_doc_id}
                 self.resolved_inverted_index[word] = {self._curr_url}
+
     def _text_of(self, elem):
         """Get the text inside some element without any tags."""
         if isinstance(elem, Tag):
@@ -265,9 +268,26 @@ class crawler(object):
         else:
             return elem.string
 
-    # update local page ranks
-    def get_page_ranks(self):
-        return page_rank(self.links)
+    # update local page ranks and store to database
+    def crawler_page_ranks(self):
+        calculatedRanks = page_rank(self.links)
+
+        # store to database
+        self.dbconnection.set('pageranks',calculatedRanks)
+        print "Printing page ranks: "
+        print self.dbconnection.get('pageranks')
+        return calculatedRanks
+
+    #stores lexicon, inverted index, and doc ids to redis
+    def store_to_database(self):
+        self.dbconnection.set('invertedIndex',self.inverted_index)
+        self.dbconnection.set('documentIndex', self._doc_id_cache)
+        self.dbconnection.set('lexicon',self._word_id_cache)
+
+        # Uncomment below to check if the items were uploaded
+        # print self.dbconnection.get('invertedIndex')
+        # print self.dbconnection.get('lexicon')
+        # print self.dbconnection.get('documentIndex')
 
     def _index_document(self, soup):
         """Traverse the document in depth-first order and call functions when entering
@@ -356,6 +376,9 @@ class crawler(object):
                 if socket:
                     socket.close()
 
+            #persistent store to database
+            self.store_to_database()
+
     # returns the inverted index when called
     def get_inverted_index(self):
         return self.inverted_index
@@ -366,7 +389,8 @@ class crawler(object):
 # -----------------------------------------------------------------------------
 # Main -------------------------------------------------------------------------
 if __name__ == "__main__":
-    bot = crawler(None, "urls.txt")
+    redisConnection = redis.Redis()
+    bot = crawler(redisConnection, "urls.txt")
     bot.crawl(depth=1)
-    print "Printing page ranks: "
-    print bot.get_page_ranks()
+
+    bot.crawler_page_ranks()

@@ -24,6 +24,8 @@ import urlparse
 from bs4 import BeautifulSoup
 from bs4 import Tag
 from collections import defaultdict
+import redis
+from pagerank import page_rank
 import re
 
 def attr(elem, attr):
@@ -51,6 +53,7 @@ class crawler(object):
         self._word_id_cache = { } # lexicon, keeps a list of words
         self.inverted_index = { }
         self.resolved_inverted_index = { }
+        self.links = [ ] # list of tuples in the form (idfrom,idto)
 
         # functions to call when entering and exiting specific tags
         self._enter = defaultdict(lambda *a, **ka: self._visit_ignore)
@@ -182,7 +185,9 @@ class crawler(object):
     def add_link(self, from_doc_id, to_doc_id):
         """Add a link into the database, or increase the number of links between
         two pages in the database."""
-        # TODO
+        # Insert the doc_id to doc_id combination as a tuple and append to list
+        # of links
+        self.links.append((from_doc_id,to_doc_id))
 
     def _visit_title(self, elem):
         """Called when visiting the <title> tag."""
@@ -259,6 +264,10 @@ class crawler(object):
             return " ".join(text)
         else:
             return elem.string
+
+    # update local page ranks
+    def get_page_ranks(self):
+        return page_rank(self.links)
 
     def _index_document(self, soup):
         """Traverse the document in depth-first order and call functions when entering
@@ -354,6 +363,10 @@ class crawler(object):
     def get_resolved_inverted_index(self):
         return self.resolved_inverted_index
 
+# -----------------------------------------------------------------------------
+# Main -------------------------------------------------------------------------
 if __name__ == "__main__":
     bot = crawler(None, "urls.txt")
-    bot.crawl(depth=0)
+    bot.crawl(depth=1)
+    print "Printing page ranks: "
+    print bot.get_page_ranks()

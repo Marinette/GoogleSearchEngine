@@ -37,7 +37,7 @@
 		<div class="row h-100 justify-content-center align-items-center">
 			<class="col-6 justify-content-center">
 				<form action="/search" method="post">
-					<input class="form-control" name="keywords" placeholder="Search.." type="text" />
+					<input class="form-control" name="keywords" placeholder="Search..." type="text" />
 				</form>
 				<div class="query-words">
 					<form action="/">

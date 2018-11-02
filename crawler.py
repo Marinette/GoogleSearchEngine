@@ -24,8 +24,11 @@ import urlparse
 from bs4 import BeautifulSoup
 from bs4 import Tag
 from collections import defaultdict
+import redis
+from pagerank import page_rank
 import re
 
+# --------------------------------------------------------------------------
 def attr(elem, attr):
     """An html attribute from an html element. E.g. <a href="">, then
     attr(elem, "href") will get the href or an empty string."""
@@ -51,6 +54,9 @@ class crawler(object):
         self._word_id_cache = { } # lexicon, keeps a list of words
         self.inverted_index = { }
         self.resolved_inverted_index = { }
+        self.links = [ ] # list of tuples in the form (idfrom,idto)
+        self.dbconnection = db_conn # instancing the connecting in the class
+        self.doc_ids = []
 
         # functions to call when entering and exiting specific tags
         self._enter = defaultdict(lambda *a, **ka: self._visit_ignore)
@@ -164,6 +170,7 @@ class crawler(object):
 
         doc_id = self._mock_insert_document(url)
         self._doc_id_cache[url] = doc_id
+        self.doc_ids.append((doc_id,url))
         return doc_id
 
     def _fix_url(self, curr_url, rel):
@@ -182,7 +189,9 @@ class crawler(object):
     def add_link(self, from_doc_id, to_doc_id):
         """Add a link into the database, or increase the number of links between
         two pages in the database."""
-        # TODO
+        # Insert the doc_id to doc_id combination as a tuple and append to list
+        # of links
+        self.links.append((from_doc_id,to_doc_id))
 
     def _visit_title(self, elem):
         """Called when visiting the <title> tag."""
@@ -249,6 +258,7 @@ class crawler(object):
             else:
                 self.inverted_index[self.word_id(word)] = {self._curr_doc_id}
                 self.resolved_inverted_index[word] = {self._curr_url}
+
     def _text_of(self, elem):
         """Get the text inside some element without any tags."""
         if isinstance(elem, Tag):
@@ -259,6 +269,31 @@ class crawler(object):
             return " ".join(text)
         else:
             return elem.string
+
+    # update local page ranks and store to database
+    def crawler_page_ranks(self):
+        calculatedRanks = page_rank(self.links)
+        # order by greatest pg to least
+        # create a list of tuples
+        pageRanks = []
+        for page in calculatedRanks:
+            pageRanks.append((self.doc_ids[page][1],calculatedRanks[page]))
+        #sort the list by descending page ranks
+        pageRanks.sort(key=lambda tup: tup[1], reverse = True)
+        # store to database
+        self.dbconnection.set('pageranks',pageRanks)
+        return pageRanks
+
+    #stores lexicon, inverted index, and doc ids to redis
+    def store_to_database(self):
+        self.dbconnection.set('invertedIndex',self.inverted_index)
+        self.dbconnection.set('documentIndex', self._doc_id_cache)
+        self.dbconnection.set('lexicon',self._word_id_cache)
+
+        # Uncomment below to check if the items were uploaded
+        # print self.dbconnection.get('invertedIndex')
+        # print self.dbconnection.get('lexicon')
+        # print self.dbconnection.get('documentIndex')
 
     def _index_document(self, soup):
         """Traverse the document in depth-first order and call functions when entering
@@ -347,6 +382,9 @@ class crawler(object):
                 if socket:
                     socket.close()
 
+            #persistent store to database
+            self.store_to_database()
+
     # returns the inverted index when called
     def get_inverted_index(self):
         return self.inverted_index
@@ -354,6 +392,10 @@ class crawler(object):
     def get_resolved_inverted_index(self):
         return self.resolved_inverted_index
 
+# -----------------------------------------------------------------------------
+# Main -------------------------------------------------------------------------
 if __name__ == "__main__":
-    bot = crawler(None, "urls.txt")
-    bot.crawl(depth=0)
+    redisConnection = redis.Redis()
+    bot = crawler(redisConnection, "urls.txt")
+    bot.crawl(depth=1)
+    bot.crawler_page_ranks()

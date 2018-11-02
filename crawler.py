@@ -56,6 +56,7 @@ class crawler(object):
         self.resolved_inverted_index = { }
         self.links = [ ] # list of tuples in the form (idfrom,idto)
         self.dbconnection = db_conn # instancing the connecting in the class
+        self.doc_ids = []
 
         # functions to call when entering and exiting specific tags
         self._enter = defaultdict(lambda *a, **ka: self._visit_ignore)
@@ -169,6 +170,7 @@ class crawler(object):
 
         doc_id = self._mock_insert_document(url)
         self._doc_id_cache[url] = doc_id
+        self.doc_ids.append((doc_id,url))
         return doc_id
 
     def _fix_url(self, curr_url, rel):
@@ -271,12 +273,16 @@ class crawler(object):
     # update local page ranks and store to database
     def crawler_page_ranks(self):
         calculatedRanks = page_rank(self.links)
-
+        # order by greatest pg to least
+        # create a list of tuples
+        pageRanks = []
+        for page in calculatedRanks:
+            pageRanks.append((self.doc_ids[page][1],calculatedRanks[page]))
+        #sort the list by descending page ranks
+        pageRanks.sort(key=lambda tup: tup[1], reverse = True)
         # store to database
-        self.dbconnection.set('pageranks',calculatedRanks)
-        print "Printing page ranks: "
-        print self.dbconnection.get('pageranks')
-        return calculatedRanks
+        self.dbconnection.set('pageranks',pageRanks)
+        return pageRanks
 
     #stores lexicon, inverted index, and doc ids to redis
     def store_to_database(self):
@@ -392,5 +398,4 @@ if __name__ == "__main__":
     redisConnection = redis.Redis()
     bot = crawler(redisConnection, "urls.txt")
     bot.crawl(depth=1)
-
     bot.crawler_page_ranks()

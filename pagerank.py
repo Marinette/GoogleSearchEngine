@@ -1,4 +1,3 @@
-# Page Rank -------------------------------------------------------------------
 # Copyright (C) 2011 by Peter Goodman
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -22,7 +21,6 @@
 def page_rank(links, num_iterations=20, initial_pr=1.0):
     from collections import defaultdict
     import numpy as np
-
     page_rank = defaultdict(lambda: float(initial_pr))
     num_outgoing_links = defaultdict(float)
     incoming_link_sets = defaultdict(set)
@@ -51,3 +49,7 @@ def page_rank(links, num_iterations=20, initial_pr=1.0):
             page_rank[doc_id] = lead + tail
 
     return page_rank
+
+if __name__ == "__main__":
+    print page_rank([(1,2), (2, 4), (4, 3)])
+    print page_rank([(1,2), (2, 4), (4, 3), (3, 1), (3, 2)])

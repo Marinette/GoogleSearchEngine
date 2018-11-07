@@ -50,11 +50,12 @@ class crawler(object):
         self._url_queue = [ ] # hit list
         self._doc_id_cache = { } # set o/ document index
         self._word_id_cache = { } # lexicon, keeps a list of words
-        self.inverted_index = { }
-        self.resolved_inverted_index = { }
-        self.links = [ ] # list of tuples in the form (idfrom,idto)
+        self._inverted_index = { }
+        self._resolved_inverted_index = { }
+        self._links = [ ] # list of tuples in the form (idfrom,idto)
         self.dbconnection = db_conn # instancing the connecting in the class
         self.doc_ids = []
+        self._visited_links = [ ]
 
         # functions to call when entering and exiting specific tags
         self._enter = defaultdict(lambda *a, **ka: self._visit_ignore)
@@ -189,7 +190,8 @@ class crawler(object):
         two pages in the database."""
         # Insert the doc_id to doc_id combination as a tuple and append to list
         # of links
-        self.links.append((from_doc_id,to_doc_id))
+        if (from_doc_id,to_doc_id) not in self._visited_links:
+            self._links.append((from_doc_id,to_doc_id))
 
     def _visit_title(self, elem):
         """Called when visiting the <title> tag."""
@@ -216,6 +218,7 @@ class crawler(object):
         self.add_link(self._curr_doc_id, self.document_id(dest_url))
 
         # TODO add title/alt/text to index for destination url
+
 
     def _add_words_to_document(self):
         # TODO: knowing self._curr_doc_id and the list of all words and their
@@ -245,13 +248,13 @@ class crawler(object):
             self._curr_words.append((self.word_id(word), self._font_size))
 
             """ Update inverted index """
-            if self.word_id(word) in self.inverted_index:
-                self.inverted_index[self.word_id(word)].add(self._curr_doc_id)
-                self.resolved_inverted_index[word].add(self._curr_url)
+            if self.word_id(word) in self._inverted_index:
+                self._inverted_index[self.word_id(word)].add(self._curr_doc_id)
+                self._resolved_inverted_index[word].add(self._curr_url)
 
             else:
-                self.inverted_index[self.word_id(word)] = {self._curr_doc_id}
-                self.resolved_inverted_index[word] = {self._curr_url}
+                self._inverted_index[self.word_id(word)] = {self._curr_doc_id}
+                self._resolved_inverted_index[word] = {self._curr_url}
 
     def _text_of(self, elem):
         """Get the text inside some element without any tags."""
@@ -266,12 +269,15 @@ class crawler(object):
 
     # update local page ranks and store to database
     def crawler_page_ranks(self):
-        calculatedRanks = page_rank(self.links)
+
+        calculatedRanks = page_rank(self._links)
         # order by greatest pg to least
         # create a list of tuples
         pageRanks = []
         for page in calculatedRanks:
-            pageRanks.append((self.doc_ids[page][1],calculatedRanks[page]))
+            for doc_id,url in self.doc_ids:
+                if doc_id is page:
+                    pageRanks.append((url,calculatedRanks[page]))
         #sort the list by descending page ranks
         pageRanks.sort(key=lambda tup: tup[1], reverse = True)
         # store to database
@@ -280,7 +286,7 @@ class crawler(object):
 
     #stores lexicon, inverted index, and doc ids to redis
     def store_to_database(self):
-        self.dbconnection.set('invertedIndex',self.inverted_index)
+        self.dbconnection.set('invertedIndex',self._inverted_index)
         self.dbconnection.set('documentIndex', self._doc_id_cache)
         self.dbconnection.set('lexicon',self._word_id_cache)
 
@@ -359,7 +365,7 @@ class crawler(object):
             try:
                 socket = urllib2.urlopen(url, timeout=timeout)
                 soup = BeautifulSoup(socket.read(),"html.parser")
-
+                print url
                 self._curr_depth = depth_ + 1
                 self._curr_url = url
                 self._curr_doc_id = doc_id
@@ -367,8 +373,6 @@ class crawler(object):
                 self._curr_words = [ ]
                 self._index_document(soup)
                 self._add_words_to_document()
-                print "    url="+repr(self._curr_url)
-
             except Exception as e:
                 print e
                 pass
@@ -381,10 +385,10 @@ class crawler(object):
 
     # returns the inverted index when called
     def get_inverted_index(self):
-        return self.inverted_index
+        return self._inverted_index
     # given an inverted index, returns word id as a string and doc id as a string
     def get_resolved_inverted_index(self):
-        return self.resolved_inverted_index
+        return self._resolved_inverted_index
 
 # -----------------------------------------------------------------------------
 # Main -------------------------------------------------------------------------
@@ -392,4 +396,5 @@ if __name__ == "__main__":
     redisConnection = redis.Redis()
     bot = crawler(redisConnection, "urls.txt")
     bot.crawl(depth=1)
+
     print bot.crawler_page_ranks()

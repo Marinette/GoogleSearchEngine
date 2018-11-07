@@ -17,5 +17,5 @@ import re
 if __name__ == "__main__":
     redisConnection = redis.Redis()
     bot = crawler(redisConnection, "urls.txt")
-    bot.crawl(depth=1)
+    bot.crawl(depth=3)
     pprint.pprint(bot.crawler_page_ranks())

@@ -27,6 +27,9 @@ from collections import defaultdict
 import redis
 from pagerank import page_rank
 import re
+import thread
+import threading
+from threading import Thread
 
 # --------------------------------------------------------------------------
 def attr(elem, attr):
@@ -55,6 +58,7 @@ class crawler(object):
         self.inverted_index = { }
         self.resolved_inverted_index = { }
         self.links = [ ] # list of tuples in the form (idfrom,idto)
+        self._visited_links = [ ]
         self.dbconnection = db_conn # instancing the connecting in the class
         self.doc_ids = []
 
@@ -191,7 +195,9 @@ class crawler(object):
         two pages in the database."""
         # Insert the doc_id to doc_id combination as a tuple and append to list
         # of links
-        self.links.append((from_doc_id,to_doc_id))
+        if (from_doc_id, to_doc_id) not in self._visited_links:
+            self.links.append((from_doc_id,to_doc_id))
+            self._visited_links.append((from_doc_id,to_doc_id))
 
     def _visit_title(self, elem):
         """Called when visiting the <title> tag."""
@@ -224,6 +230,9 @@ class crawler(object):
         #       font sizes (in self._curr_words), add all the words into the
         #       database for this document
 
+        # Note: I found that there's a better/faster implementation if i put thiscode
+        # in the _add_text function so look there for my implementation of this
+        # - Marinette
         print "    num words="+ str(len(self._curr_words))
 
     def _increase_font_factor(self, factor):
@@ -248,12 +257,8 @@ class crawler(object):
 
             """ Update inverted index """
             if self.word_id(word) in self.inverted_index:
-                tempSet = self.inverted_index[self.word_id(word)]
-                tempResolvedList = self.resolved_inverted_index[word]
-                tempSet.add(self._curr_doc_id)
-                tempResolvedList.add(self._curr_url)
-                self.inverted_index[self.word_id(word)] = tempSet
-                self.resolved_inverted_index[word] = tempResolvedList
+                self.inverted_index[self.word_id(word)].add(self._curr_doc_id)
+                self.resolved_inverted_index[word].add(self._curr_url)
 
             else:
                 self.inverted_index[self.word_id(word)] = {self._curr_doc_id}
@@ -269,6 +274,13 @@ class crawler(object):
             return " ".join(text)
         else:
             return elem.string
+
+    # returns the inverted index when called
+    def get_inverted_index(self):
+        return self.inverted_index
+    # given an inverted index, returns word id as a string and doc id as a string
+    def get_resolved_inverted_index(self):
+        return self.resolved_inverted_index
 
     # update local page ranks and store to database
     def crawler_page_ranks(self):
@@ -297,7 +309,7 @@ class crawler(object):
 
     def _index_document(self, soup):
         """Traverse the document in depth-first order and call functions when entering
-        and leaving tags. When we come accross some text, add it into the index. This
+        and leaving tags. When we come across some text, add it into the index. This
         handles ignoring tags that we have no business looking at."""
         class DummyTag(object):
             next = False
@@ -341,13 +353,10 @@ class crawler(object):
             else:
                 self._add_text(tag)
 
-    def crawl(self, depth=2, timeout=3):
-        """Crawl the web!"""
-        seen = set()
+    def queue_crawl(self,url_queue,seen,depth,timeout):
+        while len(url_queue):
 
-        while len(self._url_queue):
-
-            url, depth_ = self._url_queue.pop()
+            url, depth_ = url_queue.pop()
 
             # skip this url; it's too deep
             if depth_ > depth:
@@ -384,18 +393,44 @@ class crawler(object):
 
             #persistent store to database
             self.store_to_database()
+    def crawl(self, depth=2, timeout=3):
+        """Crawl the web!"""
+        seen = set()
+        t1 = Thread(target = self.queue_crawl, args = (self._url_queue[::4],seen,depth,timeout))
+        t2 = Thread(target = self.queue_crawl, args = (self._url_queue[1::4],seen,depth,timeout))
+        t3 = Thread(target = self.queue_crawl, args = (self._url_queue[2::4],seen,depth,timeout))
+        t4 = Thread(target = self.queue_crawl, args = (self._url_queue[3::4],seen,depth,timeout))
+        try:
+            # t1.start()
+            # t2.start()
+            # t3.start()
+            # t4.start()
+            #
+            # t1.join()
+            # t2.join()
+            # t3.join()
+            # t4.join()
 
-    # returns the inverted index when called
-    def get_inverted_index(self):
-        return self.inverted_index
-    # given an inverted index, returns word id as a string and doc id as a string
-    def get_resolved_inverted_index(self):
-        return self.resolved_inverted_index
+            self.queue_crawl(self._url_queue,seen,depth,timeout)
+        except:
+            print "Error: Failed to make new threads"
+
 
 # -----------------------------------------------------------------------------
 # Main -------------------------------------------------------------------------
 if __name__ == "__main__":
-    redisConnection = redis.Redis()
-    bot = crawler(redisConnection, "urls.txt")
-    bot.crawl(depth=1)
-    bot.crawler_page_ranks()
+    try:
+        redisConnection = redis.Redis()
+    except:
+        print "Failed at connecting to database."
+
+    try:
+        bot = crawler(redisConnection, "urls.txt")
+        bot.crawl(depth=0)
+    except:
+        print "Failed at crawling the urls."
+    try:
+        print "Printing page ranks"
+        print bot.crawler_page_ranks()
+    except:
+        print "Failed at getting page ranks"

@@ -13,6 +13,7 @@ import ast
 import bottle
 from beaker.middleware import SessionMiddleware
 
+# get info from backend
 read_file = open('dump.json', 'r')
 data = json.load(read_file)
 read_file.close()
@@ -29,11 +30,6 @@ lexicons = yaml.load(lexicons)
 inverted_index = ast.literal_eval(inverted_index)
 document_index = ast.literal_eval(document_index)
 page_ranks = ast.literal_eval(page_ranks)
-
-#print(type(page_ranks))
-#print(type(document_index))
-#print(type(inverted_index))
-#print(inverted_index)
 
 session_opts = {
     'session.type': 'file',
@@ -170,6 +166,7 @@ def pagination(page = '1'):
 
     page = int(page)
 
+    # create pages
     global PER_PAGE
     start = (page - 1) * PER_PAGE
     end = page * PER_PAGE

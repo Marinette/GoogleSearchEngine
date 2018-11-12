@@ -18,4 +18,5 @@ if __name__ == "__main__":
     redisConnection = redis.Redis()
     bot = crawler(redisConnection, "urls.txt")
     bot.crawl(depth=1)
+    print "Printing Page Ranks:"
     pprint.pprint(bot.crawler_page_ranks())

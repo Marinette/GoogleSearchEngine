@@ -78,10 +78,23 @@ h2 {
 }
 
 .query-words input {
-  color: #A5815D;
+  color: #C69C6D;
   font-weight: bold;
 }
 
 .query-words input:hover {
+  color: #C69C6D;
+}
+
+.links a:link {
+  color: #A5815D;
+}
+
+a:link {
+  color: #A5815D;
+}
+
+.directional-buttons a:link {
+  font-weight: bold;
   color: #C69C6D;
 }

@@ -26,6 +26,9 @@ from collections import defaultdict
 import redis
 from pagerank import page_rank
 import re
+import thread
+import threading
+from threading import Thread
 
 # --------------------------------------------------------------------------
 def attr(elem, attr):
@@ -269,7 +272,6 @@ class crawler(object):
 
     # update local page ranks and store to database
     def crawler_page_ranks(self):
-
         calculatedRanks = page_rank(self._links)
         # order by greatest pg to least
         # create a list of tuples
@@ -341,6 +343,7 @@ class crawler(object):
             else:
                 self._add_text(tag)
 
+
     def crawl(self, depth=2, timeout=3):
         """Crawl the web!"""
         seen = set()
@@ -382,6 +385,9 @@ class crawler(object):
 
             #persistent store to database
             self.store_to_database()
+
+
+
 
     # returns the inverted index when called
     def get_inverted_index(self):

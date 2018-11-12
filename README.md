@@ -13,12 +13,7 @@ Instance created: Saturday, October 27, 2018
 
 To view search engine, follow these steps:
 
-1. Change working directory to lab2_group_24
-2. chmod 400 my_key.pem
-3. ssh -i my_key.pem ubuntu@35.172.205.127
-4. Change working directory to lab2_group_24 (cd lab2_group_24)
-5. Run frontend.py (sudo python frontend.py)
-6. Go to http://35.172.205.127:80/
+1. Go to http://35.172.205.127:80/
 
 Benchmark Setup:
 
@@ -34,6 +29,13 @@ b. sudo apt-get install sysstat dstat
    
 Benchmarking results can be found in RESULT file. 
 
+# Lab 3
+   
+Benchmarking results can be found in LAB3RESULT file.
+
+Frontend:
+
+Backend:
 
 
 

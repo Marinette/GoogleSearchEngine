@@ -22,6 +22,7 @@ Benchmark Setup:
 1. Used the following commands on Ubuntu:
 
 a. sudo apt-get install apache2-utils
+
 b. sudo apt-get install sysstat dstat
 
 2. On another computer, used this command: ab -n 1000 -c 50 http://35.172.205.127:80/?keywords=csc326+lab2
@@ -38,6 +39,7 @@ Benchmark Setup:
 1. Used the following commands on Ubuntu:
 
 a. sudo apt-get install apache2-utils
+
 b. sudo apt-get install sysstat dstat
 
 2. On another computer, used this command: ab -n 1000 -c 50 http://54.161.255.192:80/?keywords=csc326+ece

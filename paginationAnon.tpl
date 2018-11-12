@@ -77,7 +77,7 @@
 			 if page > 1:
 					page_num = page - 1
 		%>
-		<% ref = "/search/%s/%s" %(keyword, page_num) %>
+		<% ref = "/search/%s" %(page_num) %>
 		<div class="directional-buttons" style="font-weight:bold">
 			<center style="font-size:15px"><a href="{{ref}}" style="color:#C69C6D">Previous Page</a></center>
 		</div>
@@ -87,7 +87,7 @@
 				if page < len(pageranked_urls)/5:
 					next_page = page + 1
 		%>
-		<% ref = "/search/%s/%s" %(keyword, next_page) %>
+		<% ref = "/search/%s" %(next_page) %>
 		<div class="directional-buttons" style="font-weight:bold">
 			<center style="font-size:15px"><a href="{{ref}}" style="color:#C69C6D">Next Page</a></center>
 		</div>

@@ -54,7 +54,6 @@ pageranked_urls = []
 
 PER_PAGE = 5
 
-num_pages = 0
 ## ---------------------------------------------------------------------------##
 
 #------------------- R O U T E S ----------------------------------------------#
@@ -117,8 +116,6 @@ def search_keyword():
             if pr in urls:
                 pageranked_urls.append(pr)
 
-    key_word = word_list[0]
-
     d = dict()
     global history
     global word_counter
@@ -161,12 +158,10 @@ def search_keyword():
         output = template('tableAnon.tpl', keyword = query, table = word_counter, url_table = url_counter)
     return output"""
 
-    rd = ("/search/%s/1" %(key_word))
-    redirect(rd)
+    redirect("/search/1")
 
-@route("/search//<page>")
-@route("/search/<keyword>/<page>")
-def pagination(keyword="nothing", page = '1'):
+@route("/search/<page>")
+def pagination(page = '1'):
 
     global history_counter
     global word_counter
@@ -181,8 +176,6 @@ def pagination(keyword="nothing", page = '1'):
 
     parameters = {
             'page': page,
-            'keyword': keyword,
-            'query': query,
             'pageranked_urls': pageranked_urls,
             'start': start,
             'end': end,
@@ -195,9 +188,9 @@ def pagination(keyword="nothing", page = '1'):
         profilePicture = session['picture']
         userName = session['name']
         email = session['email']
-        output = template('pagination.tpl', key_word = query, table = word_counter, profilePicture = profilePicture, Name = userName, Email = email, **parameters)
+        output = template('pagination.tpl', key_word = query, profilePicture = profilePicture, Name = userName, Email = email, **parameters)
     except: # runs if no login info
-        output = template('paginationAnon.tpl', key_word = query, table = word_counter, **parameters)
+        output = template('paginationAnon.tpl', key_word = query, **parameters)
     return output
 
 @route('/login')
@@ -262,3 +255,4 @@ def saveSession(user_document):
 
 #run the app
 bottle.run(app=sessionApp)
+#bottle.run(host = "0.0.0.0", port = 80)

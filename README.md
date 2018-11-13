@@ -44,7 +44,7 @@ b. sudo apt-get install sysstat dstat
 
 2. On another computer, used this command: ab -n 1000 -c 50 http://54.161.255.192:80/?keywords=csc326+ece
    
-Benchmarking results can be found in LAB3RESULT file.
+Benchmarking results can be found in LAB3RESULTS file.
 
 Frontend:
 

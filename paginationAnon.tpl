@@ -65,7 +65,7 @@
 			<div class="col-6 justify-content-center">
 				<div class="links">
 					<p style="font-size:20px">
-						<a href="{{url}}" style="color:#A5815D">{{url}}</a>
+						<a href="{{url}}" style="color:#A5815D">{{pageranked_titles[url]}}</a>
 					</p>
 				</div>
 			</div>

@@ -22,11 +22,12 @@ page_ranks = data[0]['pageranks']
 inverted_index = data[0]['invertedIndex']
 document_index = data[0]['documentIndex']
 lexicons = data[0]['lexicon']
-
+url_titles = data[0]['titles']
 inverted_index = inverted_index.replace("set(", "")
 inverted_index = inverted_index.replace(")", "")
 
 lexicons = yaml.load(lexicons)
+url_titles = ast.literal_eval(url_titles)
 inverted_index = ast.literal_eval(inverted_index)
 document_index = ast.literal_eval(document_index)
 page_ranks = ast.literal_eval(page_ranks)
@@ -45,9 +46,8 @@ history_counter = """ """
 word_counter = """ """
 history = dict()
 query = ""
-
 pageranked_urls = []
-
+pageranked_titles = {}
 PER_PAGE = 5
 
 ## ---------------------------------------------------------------------------##
@@ -93,24 +93,34 @@ def search_keyword():
     global inverted_index
     global document_index
     global page_ranks
+    global url_titles
 
     # get search results
     key_word = word_list[0]
     urls = []
     global pageranked_urls
     pageranked_urls = []
-
+    global pageranked_titles
+    pageranked_titles = {}
     key_word = "u'" + key_word + "'"
 
+    print url_titles
     if key_word in lexicons:
         key_word_value = lexicons[key_word]
         url_id_list = inverted_index[key_word_value]
+
         for url, url_id in document_index.items():
             if url_id in url_id_list:
                 urls.append(url)
         for pr, rank in page_ranks:
             if pr in urls:
                 pageranked_urls.append(pr)
+                try:
+                    pageranked_titles[pr] = url_titles[str(pr)]
+                except:
+                    pageranked_titles[pr] = pr
+
+        print pageranked_titles
 
     d = dict()
     global history
@@ -162,10 +172,9 @@ def pagination(page = '1'):
     global history_counter
     global word_counter
     global pageranked_urls
+    global pageranked_titles
     global query
-
     page = int(page)
-
     # create pages
     global PER_PAGE
     start = (page - 1) * PER_PAGE
@@ -176,6 +185,7 @@ def pagination(page = '1'):
             'pageranked_urls': pageranked_urls,
             'start': start,
             'end': end,
+            'pageranked_titles': pageranked_titles
             }
 
     session = request.environ.get('beaker.session')

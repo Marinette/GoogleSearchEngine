@@ -59,6 +59,7 @@ class crawler(object):
         self.dbconnection = db_conn # instancing the connecting in the class
         self.doc_ids = []
         self._visited_links = [ ]
+        self._url_titles = {} #dic - url -> title text
 
         # functions to call when entering and exiting specific tags
         self._enter = defaultdict(lambda *a, **ka: self._visit_ignore)
@@ -202,6 +203,7 @@ class crawler(object):
         print "document title="+ repr(title_text)
 
         # TODO update document title for document id self._curr_doc_id
+        self._url_titles[self._curr_url] = title_text
 
     def _visit_a(self, elem):
         """Called when visiting <a> tags."""
@@ -291,11 +293,14 @@ class crawler(object):
         self.dbconnection.set('invertedIndex',self._inverted_index)
         self.dbconnection.set('documentIndex', self._doc_id_cache)
         self.dbconnection.set('lexicon',self._word_id_cache)
+        self.dbconnection.set('titles',self._url_titles)
 
         # Uncomment below to check if the items were uploaded
         # print self.dbconnection.get('invertedIndex')
         # print self.dbconnection.get('lexicon')
         # print self.dbconnection.get('documentIndex')
+        # print "Printing titles"
+        # print self.dbconnection.get('titles')
 
     def _index_document(self, soup):
         """Traverse the document in depth-first order and call functions when entering

@@ -27,7 +27,6 @@
 
 <body>
 	<div class="container ">
-		<a href='#'> Hi </a>
 		<div class="row h-100 justify-content-center align-items-center no-gutters">
 			<div class="engineLogo">
 				<img src="/static/beanlogo.png" style="width:17%;height:auto" ; alt="Logo">

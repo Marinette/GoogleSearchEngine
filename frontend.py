@@ -104,7 +104,6 @@ def search_keyword():
     pageranked_titles = {}
     key_word = "u'" + key_word + "'"
 
-    print url_titles
     if key_word in lexicons:
         key_word_value = lexicons[key_word]
         url_id_list = inverted_index[key_word_value]

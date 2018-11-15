@@ -120,8 +120,6 @@ def search_keyword():
                 except:
                     pageranked_titles[pr] = pr
 
-        print pageranked_titles
-
     d = dict()
     global history
     global word_counter

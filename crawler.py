@@ -290,6 +290,17 @@ class crawler(object):
         else:
             return elem.string
 
+    def _text_of_para(self, elem):
+        """Get the text inside some element without any tags."""
+        if isinstance(elem, Tag):
+            text = [ ]
+            for sub_elem in elem:
+                text.append(self._text_of(sub_elem))
+
+            return " ".join(text)
+        else:
+            return elem.string
+
     # update local page ranks and store to database
     def crawler_page_ranks(self):
         calculatedRanks = page_rank(self._links)

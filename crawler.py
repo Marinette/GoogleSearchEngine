@@ -234,7 +234,7 @@ class crawler(object):
             try:
                 paragraph_text = self._text_of_para(elem).strip()
                 paragraph_text = strip_tags(paragraph_text)
-                paragraph_text = (paragraph_text[:501] + '...') if len(paragraph_text) > 500 else paragraph_text
+                paragraph_text = (paragraph_text[:1001] + '...') if len(paragraph_text) > 1000 else paragraph_text
                 self._url_paragraphs[self._curr_url] = paragraph_text
                 print "description of url:" + repr(paragraph_text)
             except:

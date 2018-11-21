@@ -60,6 +60,7 @@ class crawler(object):
         self.doc_ids = []
         self._visited_links = [ ]
         self._url_titles = {} #dic - url -> title text
+        self._url_paragraphs = {} # dic - url -> paragraph text
 
         # functions to call when entering and exiting specific tags
         self._enter = defaultdict(lambda *a, **ka: self._visit_ignore)
@@ -74,6 +75,10 @@ class crawler(object):
             self._visit_title(*args, **kargs)
             self._increase_font_factor(7)(*args, **kargs)
 
+        def visit_paragraph(*args,**kargs):
+            self._visit_paragraph(*args, **kargs)
+            self._increase_font_factor(7)(*args, **kargs)
+
         # increase the font size when we enter these tags
         self._enter['b'] = self._increase_font_factor(2)
         self._enter['strong'] = self._increase_font_factor(2)
@@ -85,6 +90,7 @@ class crawler(object):
         self._enter['h4'] = self._increase_font_factor(4)
         self._enter['h5'] = self._increase_font_factor(3)
         self._enter['title'] = visit_title
+        self._enter['p'] = visit_paragraph
 
         # decrease the font size when we exit these tags
         self._exit['b'] = self._increase_font_factor(-2)
@@ -97,6 +103,7 @@ class crawler(object):
         self._exit['h4'] = self._increase_font_factor(-4)
         self._exit['h5'] = self._increase_font_factor(-3)
         self._exit['title'] = self._increase_font_factor(-7)
+        self._exit['p'] = self._increase_font_factor(-7)
 
         # never go in and parse these tags
         self._ignored_tags = set([
@@ -205,6 +212,17 @@ class crawler(object):
         # TODO update document title for document id self._curr_doc_id
         self._url_titles[self._curr_url] = title_text
 
+    def _visit_paragraph(self,elem):
+        """ Called when visiting the <p> tag """
+        # only add this p if we don't already have a descriptor for the site
+        if self._curr_url not in self._url_paragraphs:
+            try:
+                paragraph_text = self._text_of(elem).strip()
+                self._url_paragraphs[self._curr_url] = paragraph_text
+                print "description of url:" + repr(paragraph_text)
+            except:
+                print "Failed to get paragraph text"
+
     def _visit_a(self, elem):
         """Called when visiting <a> tags."""
 
@@ -294,6 +312,7 @@ class crawler(object):
         self.dbconnection.set('documentIndex', self._doc_id_cache)
         self.dbconnection.set('lexicon',self._word_id_cache)
         self.dbconnection.set('titles',self._url_titles)
+        self.dbconnection.set('paragraphs',self._url_paragraphs)
 
         # Uncomment below to check if the items were uploaded
         # print self.dbconnection.get('invertedIndex')
@@ -392,14 +411,14 @@ class crawler(object):
             self.store_to_database()
 
 
-
-
     # returns the inverted index when called
     def get_inverted_index(self):
         return self._inverted_index
     # given an inverted index, returns word id as a string and doc id as a string
     def get_resolved_inverted_index(self):
         return self._resolved_inverted_index
+    def get_paragraphs(self):
+        return self._url_paragraphs
 
 # -----------------------------------------------------------------------------
 # Main -------------------------------------------------------------------------
@@ -408,4 +427,4 @@ if __name__ == "__main__":
     bot = crawler(redisConnection, "urls.txt")
     bot.crawl(depth=1)
 
-    print bot.crawler_page_ranks()
+    print bot.get_paragraphs()

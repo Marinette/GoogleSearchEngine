@@ -26,6 +26,8 @@ url_titles = data[0]['titles']
 url_paragraphs = data[0]['paragraphs']
 inverted_index = inverted_index.replace("set(", "")
 inverted_index = inverted_index.replace(")", "")
+url_paragraphs = url_paragraphs.replace("\\n","")
+url_paragraphs = url_paragraphs.replace("\\r","")
 
 lexicons = yaml.load(lexicons)
 url_titles = ast.literal_eval(url_titles)
@@ -103,6 +105,7 @@ def search_keyword():
     global pageranked_urls
     pageranked_urls = []
     global pageranked_titles
+    global url_paragraphs
     pageranked_titles = {}
     key_word = "u'" + key_word + "'"
 
@@ -115,11 +118,14 @@ def search_keyword():
                 urls.append(url)
         for pr, rank in page_ranks:
             if pr in urls:
-                pageranked_urls.append(pr)
                 try:
                     pageranked_titles[pr] = url_titles[str(pr)]
+                    pageranked_urls.append(pr)
                 except:
                     pageranked_titles[pr] = pr
+
+                if pr not in url_paragraphs:
+                    url_paragraphs[pr] = ""
 
     d = dict()
     global history
@@ -179,7 +185,6 @@ def pagination(page = '1'):
     global PER_PAGE
     start = (page - 1) * PER_PAGE
     end = page * PER_PAGE
-
     parameters = {
             'page': page,
             'pageranked_urls': pageranked_urls,

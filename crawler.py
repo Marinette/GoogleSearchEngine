@@ -29,6 +29,7 @@ import re
 import thread
 import threading
 from threading import Thread
+from HTMLParser import HTMLParser
 
 # --------------------------------------------------------------------------
 def attr(elem, attr):
@@ -38,6 +39,20 @@ def attr(elem, attr):
         return elem[attr]
     except:
         return ""
+
+class MLStripper(HTMLParser):
+    def __init__(self):
+        self.reset()
+        self.fed = []
+    def handle_data(self, d):
+        self.fed.append(d)
+    def get_data(self):
+        return ''.join(self.fed)
+
+def strip_tags(html):
+    s = MLStripper()
+    s.feed(html)
+    return s.get_data()
 
 WORD_SEPARATORS = re.compile(r'\s|\n|\r|\t|[^a-zA-Z0-9\-_]')
 
@@ -217,8 +232,8 @@ class crawler(object):
         # only add this p if we don't already have a descriptor for the site
         if self._curr_url not in self._url_paragraphs:
             try:
-                paragraph_text = self._text_of(elem).strip()
-                self._url_paragraphs[self._curr_url] = paragraph_text
+                paragraph_text = self._text_of_para(elem).strip()
+                self._url_paragraphs[self._curr_url] = strip_tags(paragraph_text)
                 print "description of url:" + repr(paragraph_text)
             except:
                 print "Failed to get paragraph text"
@@ -295,7 +310,7 @@ class crawler(object):
         if isinstance(elem, Tag):
             text = [ ]
             for sub_elem in elem:
-                text.append(self._text_of(sub_elem))
+                text.append(self._text_of_para(sub_elem))
 
             return " ".join(text)
         else:

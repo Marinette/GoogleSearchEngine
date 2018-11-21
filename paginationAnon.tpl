@@ -63,11 +63,10 @@
 		%>
 		<div class="row h-100 justify-content-center align-items-center">
 			<div class="col-6 justify-content-center">
-				<div class="links">
-					<p style="font-size:20px">
-						<a href="{{url}}" style="color:#A5815D">{{pageranked_titles[url]}}</a>
-					</p>
-				</div>
+				<p style="font-size:20px">
+					<a href="{{url}}" style="color:#A5815D">{{pageranked_titles[url]}}</a>
+					<p> {{url_paragraphs[url]}}</p>
+				</p>
 			</div>
 		</div>
 

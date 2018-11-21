@@ -23,6 +23,7 @@ inverted_index = data[0]['invertedIndex']
 document_index = data[0]['documentIndex']
 lexicons = data[0]['lexicon']
 url_titles = data[0]['titles']
+url_paragraphs = data[0]['paragraphs']
 inverted_index = inverted_index.replace("set(", "")
 inverted_index = inverted_index.replace(")", "")
 
@@ -31,6 +32,7 @@ url_titles = ast.literal_eval(url_titles)
 inverted_index = ast.literal_eval(inverted_index)
 document_index = ast.literal_eval(document_index)
 page_ranks = ast.literal_eval(page_ranks)
+url_paragraphs = ast.literal_eval(url_paragraphs)
 
 session_opts = {
     'session.type': 'file',
@@ -171,6 +173,7 @@ def pagination(page = '1'):
     global pageranked_urls
     global pageranked_titles
     global query
+    global url_paragraphs
     page = int(page)
     # create pages
     global PER_PAGE
@@ -182,7 +185,8 @@ def pagination(page = '1'):
             'pageranked_urls': pageranked_urls,
             'start': start,
             'end': end,
-            'pageranked_titles': pageranked_titles
+            'pageranked_titles': pageranked_titles,
+            'url_paragraphs': url_paragraphs
             }
 
     session = request.environ.get('beaker.session')

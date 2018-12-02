@@ -29,7 +29,7 @@
 
 		<div class="row h-100 justify-content-center align-items-center no-gutters">
 			<div class="engineLogo">
-				<img src="/static/beanlogo.png" style="width:17%;height:auto"; alt="Logo">
+				<img src="/static/beanlogo_animated.gif" style="width:17%;height:auto"; alt="Logo">
 			</div>
 		</div>
 

@@ -453,6 +453,4 @@ class crawler(object):
 if __name__ == "__main__":
     redisConnection = redis.Redis()
     bot = crawler(redisConnection, "urls.txt")
-    bot.crawl(depth=1)
-
-    print bot.get_paragraphs()
+    bot.crawl(depth=2)

@@ -29,7 +29,7 @@
 
 		<div class="row h-100 justify-content-center align-items-center no-gutters">
 			<div class="engineLogo">
-				<img src="/static/beanlogo.png" style="width:17%;height:auto" ; alt="Logo">
+				<img src="/static/beanlogo_animated.gif" style="width:17%;height:auto" ; alt="Logo">
 			</div>
 		</div>
 
@@ -43,7 +43,6 @@
 				<h2> Search for "{{!key_word}}" </h2>
 			</div>
 		</div>
-
 
 		<%
 			page_num = 1
@@ -65,7 +64,7 @@
 			<div class="col-6 justify-content-center">
 				<p style="font-size:20px">
 					<a href="{{url}}" style="color:#A5815D">{{pageranked_titles[url]}}</a>
-					<p> {{url_paragraphs[url]}}</p>
+					<p style = "color: #A5815D"> {{url_paragraphs[url]}}</p>
 				</p>
 			</div>
 		</div>

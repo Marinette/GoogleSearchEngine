@@ -80,6 +80,7 @@ def aws_setup():
     address = conn.allocate_address()
     address.associate(instance_id)
     ip = address.public_ip
+    ip = ip.encode('ascii')
     print ('Public IP: ', ip)
 
     # get dns of the instance (instance_id)
@@ -89,14 +90,19 @@ def aws_setup():
     print ('Public DNS: ', dns)
 
     # Copy folder to AWS virtual machine
+    os.system('chmod 400 my_key.pem')
     while True:
         print("Copying folder to AWS virtual machine...")
         try:
-            os.system('scp -i my_key.pem -o StrictHostKeyChecking=no -r csc326-group24.tar.gz ubuntu@" + str(ip) + ":~/')
+            os.system('scp -i my_key.pem -o StrictHostKeyChecking=no -r lab3_group_24.tar.gz ubuntu@' + str(ip) + ':~/')
+            time.sleep(2)
+            break
         except Exception as error:
             time.sleep(1)
-            print(error)
+            #print(error)
             print("Trying again...")
+    
+    print("Done!")
 
     # ssh to AWS virtual machine
     #command = "ssh -i my_key.pem ubuntu@" + ip
@@ -109,9 +115,10 @@ def aws_setup():
         print("Trying to connect...")
         try:
             ssh.connect(hostname = str(ip), username = "ubuntu", timeout = 25.0, key_filename = "my_key.pem")
+            time.sleep(1)
+            break
         except Exception as error:
             time.sleep(1)
-            print(error)
             print("Trying again...")
 
     print("Connected!")
@@ -119,9 +126,9 @@ def aws_setup():
 
     # install packages
     stdin, stdout, stderr = ssh.exec_command('sudo apt-get update')
-    time.sleep(25)
+    time.sleep(15)
     stdin, stdout, stderr = ssh.exec_command('sudo apt-get install --yes python-pip')
-    time.sleep(100)
+    time.sleep(75)
 
     commands = ['sudo pip install bottle',
                 'sudo pip install beaker',
@@ -129,19 +136,19 @@ def aws_setup():
                 'sudo pip install autocorrect',
                 'sudo pip install oauth2client',
                 'sudo pip install google-api-python-client',
-                'tar -xf csc326-group24.tar.gz'
-                'cd csc326-group24.tar.gz']
+                'tar -xf lab3_group_24.tar.gz'
+                'cd GoogleSearchEngine-master']
 
     for command in commands:
         stdin, stdout, stderr = ssh.exec_command(command)
-        time.sleep(25)
+        time.sleep(15)
 
     # run frontend.py
-    stdin, stdout, stderr = ssh.exec_command('tmux')
-    time.sleep(5)
-    stdin, stdout, stderr = ssh.exec_command('sudo python frontend.py')
-    time.sleep(5)
-    print(stdout)
+    #stdin, stdout, stderr = ssh.exec_command('tmux')
+    #time.sleep(5)
+    stdin, stdout, stderr = ssh.exec_command('screen -d -m sudo python frontend.py')
+    time.sleep(15)
+    print stdout.read()
 
 
 if __name__ == '__main__':

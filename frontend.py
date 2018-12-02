@@ -8,6 +8,7 @@ import redis
 import json
 import yaml
 import ast
+from autocorrect import spell
 
 #-------------------- Beaker Stuff ---------------------------------------------
 import bottle
@@ -91,7 +92,27 @@ def search_keyword():
     query_lower = query.lower()
     # split the string and create a list of all words in string
     word_list = query_lower.split(" ")
-    # dictionary to store word count
+    word_list_original = query.split(" ")
+
+    # spell correction
+    correct_word_list = []
+    spell_correct = True
+    for word in word_list_original:
+        if spell(word) != word:
+            word = spell(word)
+            spell_correct = False
+        correct_word_list.append(word)
+    if not spell_correct:
+        word_list = []
+        query = ""
+        n = 0
+        for word in correct_word_list:
+            word_list.append(word)
+            if n != len(correct_word_list) - 1:
+                query += word + " "
+            else:
+                query += word
+            n += 1
 
     global lexicons
     global inverted_index
@@ -100,22 +121,27 @@ def search_keyword():
     global url_titles
 
     # get search results
-    key_word = word_list[0]
+    key_words1 = word_list
+    key_words = []
     urls = []
     global pageranked_urls
     pageranked_urls = []
     global pageranked_titles
     global url_paragraphs
     pageranked_titles = {}
-    key_word = "u'" + key_word + "'"
+    for key_word1 in key_words1:
+        key_word = "u'" + key_word1 + "'"
+        key_words.append(key_word)
 
-    if key_word in lexicons:
-        key_word_value = lexicons[key_word]
-        url_id_list = inverted_index[key_word_value]
+    for key_word in key_words:
+        if key_word in lexicons:
+            key_word_value = lexicons[key_word]
+            url_id_list = inverted_index[key_word_value]
 
-        for url, url_id in document_index.items():
-            if url_id in url_id_list:
-                urls.append(url)
+            for url, url_id in document_index.items():
+                if url_id in url_id_list:
+                    urls.append(url)
+    if len(urls) != 0:
         for pr, rank in page_ranks:
             if pr in urls:
                 try:

@@ -1,5 +1,8 @@
 import boto.ec2
 import time
+import os
+import csv
+import paramiko
 
 def get_key(conn):
 
@@ -26,8 +29,6 @@ def get_security_group(conn):
         security_group.authorize('icmp', -1, -1, '0.0.0.0/0')
         security_group.authorize('tcp', 22, 22, '0.0.0.0/0')
         security_group.authorize('tcp', 80, 80, '0.0.0.0/0')
-        #security_group.authorize('tcp', 8080, 8080, '0.0.0.0/0')
-        
     # if there is an error, get existing security group
     except boto.exception.EC2ResponseError:
         security_group = 'csc326-group24'
@@ -39,8 +40,17 @@ def aws_setup():
     """ This function connects to us-east-1, sets up an instance,
         copys files to the instance, and starts the server. """
 
-    aws_access_key_id = 'xxxxxxxx'
-    aws_secret_access_key = 'xxxxxxxx'
+    aws_access_key_id = ''
+    aws_secret_access_key = ''
+
+    # read csv file
+    csv_file = open('credentials.csv')
+    csv_reader = csv.DictReader(csv_file)
+    for row in csv_reader:
+        aws_access_key_id = row['Access key ID']
+        aws_secret_access_key = row['Secret access key']
+        break
+
     ami = 'ami-9aaa1cf2'
 
     # setup connection
@@ -52,21 +62,87 @@ def aws_setup():
     security_group = get_security_group(conn)
 
     # start instance
+    print ('Starting instance...')
     resp = conn.run_instances(
         ami, instance_type = 't2.micro', key_name = 'my_key',
         security_groups = ['csc326-group24'])
 
     inst = resp.instances[0]
-
+    
     while inst.update() != 'running':
         time.sleep(1)
 
+    # get instance id
+    instance_id = inst.id
+    print ('Instance ID: ', instance_id)
+
     # get ip address
     address = conn.allocate_address()
-    address.associate(inst.id)
+    address.associate(instance_id)
     ip = address.public_ip
-    print ('The public ip address is ', ip)
+    print ('Public IP: ', ip)
+
+    # get dns of the instance (instance_id)
+    #dns = conn.get_all_instances(instance_ids =
+        #[resp.instances[0].id])[0].instances[0].public_dns_name
+    dns = inst.public_dns_name
+    print ('Public DNS: ', dns)
+
+    # Copy folder to AWS virtual machine
+    while True:
+        print("Copying folder to AWS virtual machine...")
+        try:
+            os.system('scp -i my_key.pem -o StrictHostKeyChecking=no -r csc326-group24.tar.gz ubuntu@" + str(ip) + ":~/')
+        except Exception as error:
+            time.sleep(1)
+            print(error)
+            print("Trying again...")
+
+    # ssh to AWS virtual machine
+    #command = "ssh -i my_key.pem ubuntu@" + ip
+    #os.system(command)
+
+    ssh = paramiko.SSHClient()
+    ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+
+    while True:
+        print("Trying to connect...")
+        try:
+            ssh.connect(hostname = str(ip), username = "ubuntu", timeout = 25.0, key_filename = "my_key.pem")
+        except Exception as error:
+            time.sleep(1)
+            print(error)
+            print("Trying again...")
+
+    print("Connected!")
+    print("Installing packages...")
+
+    # install packages
+    stdin, stdout, stderr = ssh.exec_command('sudo apt-get update')
+    time.sleep(25)
+    stdin, stdout, stderr = ssh.exec_command('sudo apt-get install --yes python-pip')
+    time.sleep(100)
+
+    commands = ['sudo pip install bottle',
+                'sudo pip install beaker',
+                'sudo pip install redis',
+                'sudo pip install autocorrect',
+                'sudo pip install oauth2client',
+                'sudo pip install google-api-python-client',
+                'tar -xf csc326-group24.tar.gz'
+                'cd csc326-group24.tar.gz']
+
+    for command in commands:
+        stdin, stdout, stderr = ssh.exec_command(command)
+        time.sleep(25)
+
+    # run frontend.py
+    stdin, stdout, stderr = ssh.exec_command('tmux')
+    time.sleep(5)
+    stdin, stdout, stderr = ssh.exec_command('sudo python frontend.py')
+    time.sleep(5)
+    print(stdout)
 
 
-
-aws_setup()
+if __name__ == '__main__':
+    aws_setup()

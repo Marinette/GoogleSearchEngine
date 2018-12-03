@@ -4,6 +4,8 @@ import os
 import csv
 import paramiko
 
+ssh = None
+
 def get_key(conn):
 
     """ Try creating a new key_pair. If key_pair already exits, there will be
@@ -35,7 +37,7 @@ def get_security_group(conn):
 
     return security_group
 
-def ssh_command(ssh, command):
+def ssh_command(command):
     stdin, stdout, stderr = ssh.exec_command(command)
     exit_status = stdout.channel.recv_exit_status()
 
@@ -101,22 +103,7 @@ def aws_setup():
     dns = dns.encode('ascii')
     print ('Public DNS: ', dns)
 
-    # Copy folder to AWS virtual machine
-    os.system('chmod 400 my_key.pem')
-    while True:
-        print("Copying folder to AWS virtual machine...")
-        try:
-            os.system('scp -i my_key.pem -o StrictHostKeyChecking=no -r lab3_group_24.tar.gz ubuntu@' + str(ip) + ':~/')
-            time.sleep(2)
-            break
-        except Exception as error:
-            time.sleep(1)
-            #print(error)
-            print("Trying again...")
-
-    print("Done!")
-
-    # ssh to AWS virtual machine
+    #ssh to AWS virtual machine
     #command = "ssh -i my_key.pem ubuntu@" + ip
     #os.system(command)
 
@@ -134,11 +121,44 @@ def aws_setup():
             print("Trying again...")
 
     print("Connected!")
+
+    stdin, stdout, stderr = ssh.exec_command('sudo apt-get purge openssh-server')
+    stdin, stdout, stderr = ssh.exec_command('sudo apt-get install openssh-server')
+
+    # Copy folder to AWS virtual machine
+    os.system('chmod 400 my_key.pem')
+    while True:
+        print("Copying folder to AWS virtual machine...")
+        try:
+            os.system('scp -i my_key.pem -o StrictHostKeyChecking=no -r lab3_group_24.tar.gz ubuntu@' + str(ip) + ':~/')
+            time.sleep(2)
+            break
+        except Exception as error:
+            time.sleep(1)
+            #print(error)
+            print("Trying again...")
+
+    print("Done!")
+
     print("Installing packages...")
 
     # install packages
-    stdin, stdout, stderr = ssh_command(ssh, 'sudo apt-get update')
-    stdin, stdout, stderr = ssh_command(ssh, 'sudo apt-get install --yes python-pip')
+    stdin, stdout, stderr = ssh.exec_command('sudo apt-get update')
+    exit_status = stdout.channel.recv_exit_status()
+
+    if exit_status != 0:
+        print stderr
+        print 'Deployment encountered an unsolvable problem'
+        print 'Quiting...'
+        exit(-1)
+    stdin, stdout, stderr = ssh.exec_command('sudo apt-get install --yes python-pip')
+    exit_status = stdout.channel.recv_exit_status()
+
+    if exit_status != 0:
+        print stderr
+        print 'Deployment encountered an unsolvable problem'
+        print 'Quiting...'
+        exit(-1)
 
     commands = ['sudo pip install bottle',
                 'sudo pip install beaker',
@@ -146,16 +166,19 @@ def aws_setup():
                 'sudo pip install autocorrect',
                 'sudo pip install oauth2client',
                 'sudo pip install google-api-python-client',
-                'tar -xf lab3_group_24.tar.gz'
+                'tar -xf lab3_group_24.tar.gz',
                 'cd GoogleSearchEngine-master']
 
     for command in commands:
-        stdin, stdout, stderr = ssh_command(ssh, command)
-        time.sleep(10)
+        print command 
+        stdin, stdout, stderr = ssh.exec_command(command)
+        print stdout.read()
 
-    transport = SSH_CLIENT.get_transport()
-    channel = transport.open_session()
-    channel.exec_command('screen -d -m sudo python frontend.py')
+    #transport = ssh.get_transport()
+    #channel = transport.open_session()
+    stdin, stdout, stderr = ssh.exec_command('cd GoogleSearchEngine-master \n screen -d -m sudo python frontend.py')
+    print stdout.read()
+    print stderr.read()
     print ('Go to  http://' + str(ip) + ':80/ or http://' + str(dns))
 
 

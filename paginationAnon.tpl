@@ -70,15 +70,23 @@
 		</div>
 
 		% end
-
+		<center>
+		<div class="directional-buttons" style="font-weight:bold">
 		<%
 			 if page > 1:
 					page_num = page - 1
 		%>
 		<% ref = "/search/%s" %(page_num) %>
-		<div class="directional-buttons" style="font-weight:bold">
-			<center style="font-size:15px"><a href="{{ref}}" style="color:#C69C6D">Previous Page</a></center>
-		</div>
+			<a href="{{ref}}" style="color:#C69C6D">Previous Page</a>
+		% end
+
+		<%
+			for n in range(int(num_pages)):
+					num = n + 1
+			    ref = "/search/%s" %(num)
+					num_str = str(num)
+		%>
+					<a href="{{ref}}" style="color:#C69C6D">{{num_str}}</a>
 		% end
 
 		<%
@@ -86,13 +94,13 @@
 					next_page = page + 1
 		%>
 		<% ref = "/search/%s" %(next_page) %>
-		<div class="directional-buttons" style="font-weight:bold">
-			<center style="font-size:15px"><a href="{{ref}}" style="color:#C69C6D">Next Page</a></center>
-		</div>
+			<a href="{{ref}}" style="color:#C69C6D">Next Page</a>
 		% end
+	</center>
+	</div>
 	</div>
 </body>
-</footer>
+
 <div class="query-words" align="center">
 	<form action="/">
 		<input value="Back to Homepage" type="submit" class="btn btn-light" />

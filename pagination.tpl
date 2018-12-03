@@ -47,61 +47,66 @@
 		</div>
 
 		<%
-		page_num = 1
-		next_page = 1
-	%>
+			page_num = 1
+			next_page = 1
+		%>
 
 		<%
-		if len(pageranked_urls) == 0:
-	%>
+			if len(pageranked_urls) == 0:
+		%>
 		<h2> No results for "{{!key_word}}" </h2>
 		<h2> </h2>
 
 		% end
 
 		<%
-		for url in pageranked_urls[start : end]:
-	%>
+			for url in pageranked_urls[start : end]:
+		%>
 		<div class="row h-100 justify-content-center align-items-center">
 			<div class="col-6 justify-content-center">
 				<p style="font-size:20px">
 					<a href="{{url}}" style="color:#A5815D">{{pageranked_titles[url]}}</a>
-					<p> {{url_paragraphs[url]}}</p>
+					<p style = "color: #A5815D"> {{url_paragraphs[url]}}</p>
 				</p>
 			</div>
 		</div>
 
 		% end
-
+		<center>
+		<div class="directional-buttons" style="font-weight:bold">
 		<%
-		 if page > 1:
-				page_num = page - 1
-	%>
+			 if page > 1:
+					page_num = page - 1
+		%>
 		<% ref = "/search/%s" %(page_num) %>
-		<div class="directional-buttons" style="font-weight:bold">
-			<center style="font-size:15px"><a href="{{ref}}" style="color:#C69C6D">Previous Page</a></center>
-		</div>
+			<a href="{{ref}}" style="color:#C69C6D">Previous Page</a>
 		% end
 
 		<%
-			if page < len(pageranked_urls)/5:
-				next_page = page + 1
-	%>
-		<% ref = "/search/%s" %(next_page) %>
-		<div class="directional-buttons" style="font-weight:bold">
-			<center style="font-size:15px"><a href="{{ref}}" style="color:#C69C6D">Next Page</a></center>
-		</div>
+			for n in range(int(num_pages)):
+					num = n + 1
+					ref = "/search/%s" %(num)
+					num_str = str(num)
+		%>
+					<a href="{{ref}}" style="color:#C69C6D">{{num_str}}</a>
 		% end
-	</div>
 
-</body>
-<footer>
-
-</footer>
-<div class="query-words" align="center">
-	<form action="/">
+		<%
+				if page < len(pageranked_urls)/5:
+					next_page = page + 1
+		%>
+		<% ref = "/search/%s" %(next_page) %>
+			<a href="{{ref}}" style="color:#C69C6D">Next Page</a>
+		% end
+		</center>
+		</div>
+		</div>
+		</body>
+		
+		<div class="query-words" align="center">
+		<form action="/">
 		<input value="Back to Homepage" type="submit" class="btn btn-light" />
-	</form>
-</div>
+		</form>
+		</div>
 
-</html>
+		</html>

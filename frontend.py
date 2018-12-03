@@ -19,6 +19,7 @@ read_file = open('dump.json', 'r')
 data = json.load(read_file)
 read_file.close()
 
+# extract data
 page_ranks = data[0]['pageranks']
 inverted_index = data[0]['invertedIndex']
 document_index = data[0]['documentIndex']
@@ -42,6 +43,7 @@ session_opts = {
     'session.data_dir': './session/',
     'session.auto': True
 }
+
 #request handler
 sessionApp = SessionMiddleware(bottle.app(), session_opts)
 #-------------------Beaker End--------------------------------------------------
@@ -54,6 +56,7 @@ query = ""
 pageranked_urls = []
 pageranked_titles = {}
 PER_PAGE = 5
+num_pages = 1
 
 ## ---------------------------------------------------------------------------##
 
@@ -86,10 +89,12 @@ def error404(error):
 
 @route('/search', method='POST')
 def search_keyword():
+
     # get input string/keywords
     global query
     query = request.forms.get("keywords")
     query_lower = query.lower()
+
     # split the string and create a list of all words in string
     word_list = query_lower.split(" ")
     word_list_original = query.split(" ")
@@ -121,6 +126,7 @@ def search_keyword():
     global url_titles
 
     # get search results
+    # multi word searching
     key_words1 = word_list
     key_words = []
     urls = []
@@ -129,6 +135,7 @@ def search_keyword():
     global pageranked_titles
     global url_paragraphs
     pageranked_titles = {}
+
     for key_word1 in key_words1:
         key_word = "u'" + key_word1 + "'"
         key_words.append(key_word)
@@ -141,6 +148,7 @@ def search_keyword():
             for url, url_id in document_index.items():
                 if url_id in url_id_list:
                     urls.append(url)
+
     if len(urls) != 0:
         for pr, rank in page_ranks:
             if pr in urls:
@@ -152,6 +160,12 @@ def search_keyword():
 
                 if pr not in url_paragraphs:
                     url_paragraphs[pr] = ""
+
+    global num_pages
+    if len(pageranked_urls) % 5 == 0:
+        num_pages = int(len(pageranked_urls)/5)
+    else:
+        num_pages = int(len(pageranked_urls)/5) + 1
 
     d = dict()
     global history
@@ -183,18 +197,6 @@ def search_keyword():
         history_counter += ("<tr><td>" + key + "</td><td>" + str(history[key]) + "</td></tr>")
         count += 1
 
-    """session = request.environ.get('beaker.session')
-    output = 0;
-    # Check logged in info
-    try:
-        profilePicture = session['picture']
-        userName = session['name']
-        email = session['email']
-        output = template('table.tpl', keyword = query, table = word_counter, profilePicture = profilePicture, Name = userName, Email = email)
-    except: # runs if no login info
-        output = template('tableAnon.tpl', keyword = query, table = word_counter, url_table = url_counter)
-    return output"""
-
     redirect("/search/1")
 
 @route("/search/<page>")
@@ -206,22 +208,28 @@ def pagination(page = '1'):
     global pageranked_titles
     global query
     global url_paragraphs
+    global num_pages
+
     page = int(page)
+
     # create pages
     global PER_PAGE
     start = (page - 1) * PER_PAGE
     end = page * PER_PAGE
+
     parameters = {
             'page': page,
             'pageranked_urls': pageranked_urls,
             'start': start,
             'end': end,
             'pageranked_titles': pageranked_titles,
-            'url_paragraphs': url_paragraphs
+            'url_paragraphs': url_paragraphs,
+            'num_pages': num_pages,
             }
 
     session = request.environ.get('beaker.session')
     output = 0;
+    
     # Check logged in info
     try:
         profilePicture = session['picture']

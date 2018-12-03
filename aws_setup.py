@@ -4,8 +4,6 @@ import os
 import csv
 import paramiko
 
-ssh = None
-
 def get_key(conn):
 
     """ Try creating a new key_pair. If key_pair already exits, there will be
@@ -36,16 +34,6 @@ def get_security_group(conn):
         security_group = 'csc326-group24'
 
     return security_group
-
-def ssh_command(command):
-    stdin, stdout, stderr = ssh.exec_command(command)
-    exit_status = stdout.channel.recv_exit_status()
-
-    if exit_status != 0:
-        print stderr
-        print 'Deployment encountered an unsolvable problem'
-        print 'Quiting...'
-        exit(-1)
 
 def aws_setup():
 
@@ -97,15 +85,9 @@ def aws_setup():
     print ('Public IP: ', ip)
 
     # get dns of the instance (instance_id)
-    #dns = conn.get_all_instances(instance_ids =
-        #[resp.instances[0].id])[0].instances[0].public_dns_name
     dns = inst.public_dns_name
     dns = dns.encode('ascii')
     print ('Public DNS: ', dns)
-
-    #ssh to AWS virtual machine
-    #command = "ssh -i my_key.pem ubuntu@" + ip
-    #os.system(command)
 
     ssh = paramiko.SSHClient()
     ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
@@ -113,11 +95,10 @@ def aws_setup():
     while True:
         print("Trying to connect...")
         try:
-            ssh.connect(hostname = str(ip), username = "ubuntu", timeout = 25.0, key_filename = "my_key.pem")
-            time.sleep(1)
+            ssh.connect(hostname = str(ip), username = "ubuntu", timeout = 25.0,
+            key_filename = "my_key.pem")
             break
-        except Exception as error:
-            time.sleep(1)
+        except Exception:
             print("Trying again...")
 
     print("Connected!")
@@ -130,55 +111,32 @@ def aws_setup():
     while True:
         print("Copying folder to AWS virtual machine...")
         try:
-            os.system('scp -i my_key.pem -o StrictHostKeyChecking=no -r lab3_group_24.tar.gz ubuntu@' + str(ip) + ':~/')
-            time.sleep(2)
+            os.system('scp -i my_key.pem -o StrictHostKeyChecking=no -r' + ' ' +
+            'lab3_group_24.tar.gz ubuntu@' + str(ip) + ':~/')
             break
-        except Exception as error:
-            time.sleep(1)
-            #print(error)
+        except Exception:
             print("Trying again...")
 
     print("Done!")
 
     print("Installing packages...")
-
-    # install packages
-    stdin, stdout, stderr = ssh.exec_command('sudo apt-get update')
-    exit_status = stdout.channel.recv_exit_status()
-
-    if exit_status != 0:
-        print stderr
-        print 'Deployment encountered an unsolvable problem'
-        print 'Quiting...'
-        exit(-1)
-    stdin, stdout, stderr = ssh.exec_command('sudo apt-get install --yes python-pip')
-    exit_status = stdout.channel.recv_exit_status()
-
-    if exit_status != 0:
-        print stderr
-        print 'Deployment encountered an unsolvable problem'
-        print 'Quiting...'
-        exit(-1)
-
-    commands = ['sudo pip install bottle',
+    # install packages and run frontend.py
+    commands = ['sudo apt-get update',
+                'sudo apt-get install --yes python-pip'
+                'sudo pip install bottle',
                 'sudo pip install beaker',
                 'sudo pip install redis',
                 'sudo pip install autocorrect',
                 'sudo pip install oauth2client',
                 'sudo pip install google-api-python-client',
                 'tar -xf lab3_group_24.tar.gz',
-                'cd GoogleSearchEngine-master']
+                'cd GoogleSearchEngine-master \n screen -d -m sudo python frontend.py']
 
     for command in commands:
-        print command 
+        print (command)
         stdin, stdout, stderr = ssh.exec_command(command)
-        print stdout.read()
+        print (stdout.read())
 
-    #transport = ssh.get_transport()
-    #channel = transport.open_session()
-    stdin, stdout, stderr = ssh.exec_command('cd GoogleSearchEngine-master \n screen -d -m sudo python frontend.py')
-    print stdout.read()
-    print stderr.read()
     print ('Go to  http://' + str(ip) + ':80/ or http://' + str(dns))
 
 

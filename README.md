@@ -74,3 +74,13 @@ Command 1 will start up the redis server so that you can persistently store the 
 Command 2 will run the code in the python file, which crawls through the urls listed in url.txt and stores the necessary information from Lab 1. It then calls the pagerank.py file given in class and computes the pages ranks of the links that were craled through, pretty-printing them.
 
 Any time you want to use the pagerank function, call the crawler_page_ranks method in the crawler class, which will calculate the page ranks of the urls for you.
+
+# Lab 4
+
+AWS:
+
+
+Information on how to access the frontend on AWS and the Public DNS of the frontend on AWS will be provided when marking for this lab starts.
+
+The frontend from lab 2 can be found at http://54.161.255.192:80/ or http://ec2-54-161-255-192.compute-1.amazonaws.com.
+

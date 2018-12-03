@@ -35,6 +35,16 @@ def get_security_group(conn):
 
     return security_group
 
+def ssh_command(ssh, command):
+    stdin, stdout, stderr = ssh.exec_command(command)
+    exit_status = stdout.channel.recv_exit_status()
+
+    if exit_status != 0:
+        print stderr
+        print 'Deployment encountered an unsolvable problem'
+        print 'Quiting...'
+        exit(-1)
+
 def aws_setup():
 
     """ This function connects to us-east-1, sets up an instance,
@@ -68,12 +78,13 @@ def aws_setup():
         security_groups = ['csc326-group24'])
 
     inst = resp.instances[0]
-    
+
     while inst.update() != 'running':
         time.sleep(1)
 
     # get instance id
     instance_id = inst.id
+    instance_id = instance_id.encode('ascii')
     print ('Instance ID: ', instance_id)
 
     # get ip address
@@ -87,6 +98,7 @@ def aws_setup():
     #dns = conn.get_all_instances(instance_ids =
         #[resp.instances[0].id])[0].instances[0].public_dns_name
     dns = inst.public_dns_name
+    dns = dns.encode('ascii')
     print ('Public DNS: ', dns)
 
     # Copy folder to AWS virtual machine
@@ -101,7 +113,7 @@ def aws_setup():
             time.sleep(1)
             #print(error)
             print("Trying again...")
-    
+
     print("Done!")
 
     # ssh to AWS virtual machine
@@ -125,10 +137,8 @@ def aws_setup():
     print("Installing packages...")
 
     # install packages
-    stdin, stdout, stderr = ssh.exec_command('sudo apt-get update')
-    time.sleep(15)
-    stdin, stdout, stderr = ssh.exec_command('sudo apt-get install --yes python-pip')
-    time.sleep(75)
+    stdin, stdout, stderr = ssh_command(ssh, 'sudo apt-get update')
+    stdin, stdout, stderr = ssh_command(ssh, 'sudo apt-get install --yes python-pip')
 
     commands = ['sudo pip install bottle',
                 'sudo pip install beaker',
@@ -140,15 +150,13 @@ def aws_setup():
                 'cd GoogleSearchEngine-master']
 
     for command in commands:
-        stdin, stdout, stderr = ssh.exec_command(command)
-        time.sleep(15)
+        stdin, stdout, stderr = ssh_command(ssh, command)
+        time.sleep(10)
 
-    # run frontend.py
-    #stdin, stdout, stderr = ssh.exec_command('tmux')
-    #time.sleep(5)
-    stdin, stdout, stderr = ssh.exec_command('screen -d -m sudo python frontend.py')
-    time.sleep(15)
-    print stdout.read()
+    transport = SSH_CLIENT.get_transport()
+    channel = transport.open_session()
+    channel.exec_command('screen -d -m sudo python frontend.py')
+    print ('Go to  http://' + str(ip) + ':80/ or http://' + str(dns))
 
 
 if __name__ == '__main__':

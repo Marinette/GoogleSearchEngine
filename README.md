@@ -10,6 +10,7 @@ We re-created Google's Search engine by using Bottle.
 AWS:
 
 Instance created: Monday, November 12, 2018
+Instance Terminated!
 
 Public IP address of live web server: 54.161.255.192
 
@@ -33,6 +34,16 @@ b. sudo apt-get install sysstat dstat
 Benchmarking results can be found in RESULT file.
 
 # Lab 3
+
+AWS:
+
+Instance created: Wednesday, November 28, 2018
+
+Public IP address of live web server: 54.145.203.98
+
+Public DNS: ec2-54-145-203-98.compute-1.amazonaws.com 
+
+To view search engine, go to http://54.145.203.98:80/ or http://ec2-54-145-203-98.compute-1.amazonaws.com.
 
 Benchmark Setup:
 

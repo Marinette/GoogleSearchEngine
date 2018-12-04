@@ -10,16 +10,18 @@ The project contains the following:
 1. aws_setup.py - AWS one-click deployment script
 2. aws_terminate.py - AWS instance termination script
 3. frontend.py - Frontend implementation 
-4. client_secrets.json 
+4. client_secret_346297252987-gessg0ftmins8qrsdkkh8lgv9ask1occ.apps.googleusercontent.com.json
 5. crawler.py: Crawler implementation built on top of starter code.
 6. dump.rdb - Database file containing results from crawler
 7. dump.json - json file with data from database 
 8. urls.txt - URLs for testing crawler functionality
 9. credentials_template.csv
-• tests: folder containing unit tests and fixtures.
-o crawler_test.py: Automated unit tests for crawler.
-o test_server.py: Test server with custom HTML to facilitate unit testing.
-o test_urls.txt: URLs for crawler to crawl in unit tests.
+10. error.tpl - Template for error page 
+11. homepage.tpl - Template for homepage page 
+12. homepageanon.tpl - Template for homepage page 
+13. pagination.tpl - Template for results page 
+14. paginationAnon.tpl - Template for results page 
+15. run_backend_test.py - Backend tests
 
 # Lab 4
 

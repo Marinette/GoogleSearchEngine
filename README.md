@@ -5,6 +5,28 @@ Mimic Google's search engine using python, html, and css.
 This was a project done for the CSC326: Programming Languages Course.
 We re-created Google's Search engine by using Bottle.
 
+The project contains the following:
+
+1. aws_setup.py - AWS one-click deployment script
+2. aws_terminate.py - AWS instance termination script
+3. frontend.py - Frontend implementation 
+4. client_secrets.json 
+5. crawler.py: Crawler implementation built on top of starter code.
+6. dump.rdb - Database file containing results from crawler
+7. dump.json - json file with data from database 
+8. urls.txt - URLs for testing crawler functionality
+9. credentials_template.csv
+• tests: folder containing unit tests and fixtures.
+o crawler_test.py: Automated unit tests for crawler.
+o test_server.py: Test server with custom HTML to facilitate unit testing.
+o test_urls.txt: URLs for crawler to crawl in unit tests.
+
+# Lab 4
+
+AWS:
+
+To run aws_setup.py, my_key.pem, credentials.csv, and lab4_group_24.tar.gz (must be named this with a folder called GoogleSearchEngine-master inside that contains a file called frontend.py with the frontend implementation). The credentials.csv file should be similar to the credentials_template.csv file. 
+
 # Lab 2
 
 AWS:
@@ -75,12 +97,5 @@ Command 2 will run the code in the python file, which crawls through the urls li
 
 Any time you want to use the pagerank function, call the crawler_page_ranks method in the crawler class, which will calculate the page ranks of the urls for you.
 
-# Lab 4
-
-AWS:
-
-
-Information on how to access the frontend on AWS and the Public DNS of the frontend on AWS will be provided when marking for this lab starts.
-
-The frontend from lab 2 can be found at http://54.161.255.192:80/ or http://ec2-54-161-255-192.compute-1.amazonaws.com.
+The search engine from lab 3 can be found at http://54.145.203.98:80/ or http://ec2-54-145-203-98.compute-1.amazonaws.com.
 

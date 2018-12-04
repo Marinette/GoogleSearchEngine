@@ -22,6 +22,8 @@ The project contains the following:
 13. pagination.tpl - Template for results page 
 14. paginationAnon.tpl - Template for results page 
 15. run_backend_test.py - Backend tests
+16. my_key.pem - key for AWS
+17. style.css
 
 # Lab 4
 

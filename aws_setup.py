@@ -112,7 +112,7 @@ def aws_setup():
         print("Copying folder to AWS virtual machine...")
         try:
             os.system('scp -i my_key.pem -o StrictHostKeyChecking=no -r' + ' ' +
-            'lab3_group_24.tar.gz ubuntu@' + str(ip) + ':~/')
+            'lab4_group_24.tar.gz ubuntu@' + str(ip) + ':~/')
             break
         except Exception:
             print("Trying again...")
@@ -122,14 +122,14 @@ def aws_setup():
     print("Installing packages...")
     # install packages and run frontend.py
     commands = ['sudo apt-get update',
-                'sudo apt-get install --yes python-pip'
+                'sudo apt-get install --yes python-pip',
                 'sudo pip install bottle',
                 'sudo pip install beaker',
                 'sudo pip install redis',
                 'sudo pip install autocorrect',
                 'sudo pip install oauth2client',
                 'sudo pip install google-api-python-client',
-                'tar -xf lab3_group_24.tar.gz',
+                'tar -xf lab4_group_24.tar.gz',
                 'cd GoogleSearchEngine-master \n screen -d -m sudo python frontend.py']
 
     for command in commands:

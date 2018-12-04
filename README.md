@@ -24,6 +24,7 @@ The project contains the following:
 15. run_backend_test.py - Backend tests
 16. my_key.pem - key for AWS
 17. style.css
+18. group24_csc326_2018.pdf - Final Report
 
 # Lab 4
 

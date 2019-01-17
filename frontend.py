@@ -242,14 +242,14 @@ def pagination(page = '1'):
 
 @route('/login')
 def logIn():
-    flow = flow_from_clientsecrets("client_secret_346297252987-gessg0ftmins8qrsdkkh8lgv9ask1occ.apps.googleusercontent.com.json", scope='https://www.googleapis.com/auth/plus.me https://www.googleapis.com/auth/userinfo.email', redirect_uri = "http://localhost:8080/redirect")
+    flow = flow_from_clientsecrets("LOLUWISH")
     uri = flow.step1_get_authorize_url()
     redirect(str(uri))
 
 @route('/redirect')
 def redirect_page():
     code = request.query.get('code','')
-    flow = OAuth2WebServerFlow(client_id="346297252987-gessg0ftmins8qrsdkkh8lgv9ask1occ.apps.googleusercontent.com", client_secret = "oJVewakqwN7qzgX7J4Xh889P", scope='https://www.googleapis.com/auth/plus.me https://www.googleapis.com/auth/userinfo.email', redirect_uri = "http://localhost:8080/redirect")
+    flow = OAuth2WebServerFlow(client_id="LOLUWISH", client_secret = "LOLUWISH", scope='https://www.googleapis.com/auth/plus.me https://www.googleapis.com/auth/userinfo.email', redirect_uri = "http://localhost:8080/redirect")
     credentials = flow.step2_exchange(code)
     token = credentials.id_token['sub']
 
